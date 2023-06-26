@@ -392,6 +392,36 @@ class RentController extends Controller
         }
     }
 
+    public function getTimePrice(Request $request)
+    {
+        try {
+            if (is_null($request->user_secret_key))
+                return ApiHelpers::error('Not found params: user_secret_key');
+            if (is_null($request->public_key))
+                return ApiHelpers::error('Not found params: public_key');
+            $bot = SmsBot::query()->where('public_key', $request->public_key)->first();
+            if (is_null($request->time))
+                return ApiHelpers::error('Not found params: time');
+            if (is_null($request->country))
+                return ApiHelpers::error('Not found params: time');
+            if (is_null($request->service))
+                return ApiHelpers::error('Not found params: time');
+            $botDto = BotFactory::fromEntity($bot);
+
+            $time_price = $this->rentService->getTimePrice(
+                $botDto,
+                $request->country,
+                $request->service,
+                $request->time
+            );
+
+            return ApiHelpers::success($time_price);
+
+        } catch (Exception $e) {
+            return ApiHelpers::errorNew($e->getMessage());
+        }
+    }
+
     /**
      * метод обновения кодов через вебхук
      *

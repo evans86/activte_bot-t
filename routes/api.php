@@ -81,6 +81,7 @@ Route::get('getRentOrder', [RentController::class, 'getRentOrder']);
 Route::get('closeRentOrder', [RentController::class, 'closeRentOrder']);
 Route::get('confirmRentOrder', [RentController::class, 'confirmRentOrder']);
 Route::get('getContinuePrice', [RentController::class, 'getContinuePrice']);
+Route::get('getTimePrice', [RentController::class, 'getTimePrice']);
 Route::get('continueRent', [RentController::class, 'continueRent']);
 Route::post('rent/updateSmsRent', [RentController::class, 'updateSmsRent'])->name('cashier.webhook'); //метод обновения кодов через вебхук
 

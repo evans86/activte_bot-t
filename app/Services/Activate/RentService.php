@@ -83,11 +83,11 @@ class RentService extends MainService
      * @param $service
      * @return mixed
      */
-    public function getPriceService(BotDto $botDto, $country, $service)
+    public function getPriceService(BotDto $botDto, $country, $service, $time)
     {
         $smsActivate = new SmsActivateApi($botDto->api_key, $botDto->resource_link);
 
-        $resultRequest = $smsActivate->getRentServicesAndCountries($country);
+        $resultRequest = $smsActivate->getRentServicesAndCountries($country, $time);
 
         if (!isset($resultRequest['services'][$service]))
             throw new RuntimeException('Сервис не указан или название неверно');
@@ -96,6 +96,31 @@ class RentService extends MainService
         $service_price = $service['retail_cost'];
 
         return $service_price;
+    }
+
+    /**
+     * @param BotDto $botDto
+     * @param $country
+     * @param $service
+     * @param $time
+     * @return mixed
+     */
+    public function getTimePrice(BotDto $botDto, $country, $service, $time)
+    {
+        $smsActivate = new SmsActivateApi($botDto->api_key, $botDto->resource_link);
+
+        $resultRequest = $smsActivate->getRentServicesAndCountries($country, $time);
+
+        if (!isset($resultRequest['services'][$service]))
+            throw new RuntimeException('Сервис не указан или название неверно');
+
+        $service = $resultRequest['services'][$service];
+        $service_price = $service['retail_cost'];
+
+        $amountStart = intval(floatval($service_price) * 100);
+        $amountFinal = $amountStart + ($amountStart * ($botDto->percent / 100));
+
+        return $amountFinal;
     }
 
     /**
@@ -119,7 +144,7 @@ class RentService extends MainService
         }
 
         $country = SmsCountry::query()->where(['org_id' => $country])->first();
-        $orderAmount = $this->getPriceService($botDto, $country->org_id, $service);
+        $orderAmount = $this->getPriceService($botDto, $country->org_id, $service, $time);
         $amountStart = intval(floatval($orderAmount) * 100);
         $amountFinal = $amountStart + ($amountStart * ($botDto->percent / 100));
 
