@@ -4,15 +4,16 @@ namespace App\Dto;
 
 class BotDto
 {
-    public int    $id;
+    public int $id;
     public string $public_key;
     public string $private_key;
-    public int    $bot_id;
+    public int $bot_id;
     public string $api_key;
-    public int    $category_id;
-    public int    $percent;
-    public int    $version;
-    public int    $color;
+    public int $category_id;
+    public int $percent;
+    public int $version;
+    public int $color;
+    public ?string $black;
     public string $resource_link;
 
     public function getArray(): array
@@ -27,11 +28,10 @@ class BotDto
             'percent' => $this->percent,
             'version' => $this->version,
             'color' => $this->color,
+            'black' => $this->black,
 //            'resource_link' => $this->resource_link,
-         ];
+        ];
     }
-
-
 
 
 }
