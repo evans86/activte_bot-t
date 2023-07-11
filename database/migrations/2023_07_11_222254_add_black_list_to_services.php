@@ -14,7 +14,7 @@ class AddBlackListToServices extends Migration
     public function up()
     {
         Schema::table('bot', function (Blueprint $table) {
-            $table->text('white')->nullable()->after('color');
+            $table->text('black')->nullable()->after('color');
         });
     }
 
