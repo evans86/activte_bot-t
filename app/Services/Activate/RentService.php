@@ -59,7 +59,16 @@ class RentService extends MainService
         $services = $resultRequest['services'];
 
         $result = [];
+
+        if (!is_null($botDto->black))
+            $black_array = explode(',', $botDto->black);
+
         foreach ($services as $key => $service) {
+
+            if (!is_null($botDto->black)) {
+                if (in_array($key, $black_array))
+                    continue;
+            }
 
             $amountStart = intval(floatval($service['retail_cost']) * 100);
             $amountFinal = $amountStart + ($amountStart * ($botDto->percent / 100));
