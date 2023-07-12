@@ -32,10 +32,10 @@ class ProductService extends MainService
 
         if ($bot->resource_link == BotService::DEFAULT_HOST) {
             $services = $smsActivate->getTopCountriesByService();
-            return $this->formingPricesArr($services);
+            return $this->formingPricesArr($services, $bot);
         } else {
             $services = $smsActivate->getPrices();
-            return $this->formingPricesArr($services);
+            return $this->formingPricesArr($services, $bot);
         }
     }
 
@@ -43,10 +43,19 @@ class ProductService extends MainService
      * @param $services
      * @return array
      */
-    private function formingPricesArr($services)
+    private function formingPricesArr($services, $bot)
     {
         $result = [];
+
+        if (!is_null($bot->black))
+            $black_array = explode(',', $bot->black);
+
         foreach ($services as $key => $service) {
+
+            if (!is_null($bot->black)) {
+                if (in_array($key, $black_array))
+                    continue;
+            }
 
             array_push($result, [
                 'name' => $key,
