@@ -387,6 +387,10 @@ class OrderService extends MainService
             ->where('end_time', '<=', time())->get();
 
         echo "START count:" . count($orders) . PHP_EOL;
+
+        $start_text = "START count:" . count($orders) . PHP_EOL;
+        $this->notifyTelegram($start_text);
+
         foreach ($orders as $key => $order) {
             echo $order->id . PHP_EOL;
             $bot = SmsBot::query()->where(['id' => $order->bot_id])->first();
@@ -420,6 +424,9 @@ class OrderService extends MainService
 
         }
         echo "FINISH count:" . count($orders) . PHP_EOL;
+
+        $finish_text = "FINISH count:" . count($orders) . PHP_EOL;
+        $this->notifyTelegram($finish_text);
     }
 
     public function notifyTelegram($text)
