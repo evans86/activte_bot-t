@@ -14,6 +14,7 @@ use App\Services\MainService;
 use GuzzleHttp\Client;
 use GuzzleHttp\RequestOptions;
 use RuntimeException;
+use Exception;
 
 class OrderService extends MainService
 {
@@ -381,52 +382,57 @@ class OrderService extends MainService
     public
     function cronUpdateStatus(): void
     {
-        $statuses = [SmsOrder::STATUS_OK, SmsOrder::STATUS_WAIT_CODE, SmsOrder::STATUS_WAIT_RETRY];
+        try {
+            $statuses = [SmsOrder::STATUS_OK, SmsOrder::STATUS_WAIT_CODE, SmsOrder::STATUS_WAIT_RETRY];
 
-        $orders = SmsOrder::query()->whereIn('status', $statuses)
-            ->where('end_time', '<=', time())->get();
+            $orders = SmsOrder::query()->whereIn('status', $statuses)
+                ->where('end_time', '<=', time())->get();
 
-        echo "START count:" . count($orders) . PHP_EOL;
+            echo "START count:" . count($orders) . PHP_EOL;
 
-        $start_text = "START count:" . count($orders) . PHP_EOL;
-        $this->notifyTelegram($start_text);
+            $start_text = "Activate Start count: " . count($orders) . PHP_EOL;
+            $this->notifyTelegram($start_text);
 
-        foreach ($orders as $key => $order) {
-            echo $order->id . PHP_EOL;
-            $bot = SmsBot::query()->where(['id' => $order->bot_id])->first();
+            foreach ($orders as $key => $order) {
+                echo $order->id . PHP_EOL;
+                $bot = SmsBot::query()->where(['id' => $order->bot_id])->first();
 
-            $botDto = BotFactory::fromEntity($bot);
-            $result = BottApi::get(
-                $order->user->telegram_id,
-                $botDto->public_key,
-                $botDto->private_key
-            );
-            echo $order->id . PHP_EOL;
-
-
-            if (is_null($order->codes)) {
-                echo 'cancel_start' . PHP_EOL;
-                $this->cancel(
-                    $result['data'],
-                    $botDto,
-                    $order
+                $botDto = BotFactory::fromEntity($bot);
+                $result = BottApi::get(
+                    $order->user->telegram_id,
+                    $botDto->public_key,
+                    $botDto->private_key
                 );
-                echo 'cancel_finish' . PHP_EOL;
-            } else {
-                echo 'confirm_start' . PHP_EOL;
-                $this->confirm(
-                    $botDto,
-                    $order
-                );
-                echo 'confirm_finish' . PHP_EOL;
+                echo $order->id . PHP_EOL;
+
+
+                if (is_null($order->codes)) {
+                    echo 'cancel_start' . PHP_EOL;
+                    $this->cancel(
+                        $result['data'],
+                        $botDto,
+                        $order
+                    );
+                    echo 'cancel_finish' . PHP_EOL;
+                } else {
+                    echo 'confirm_start' . PHP_EOL;
+                    $this->confirm(
+                        $botDto,
+                        $order
+                    );
+                    echo 'confirm_finish' . PHP_EOL;
+                }
+                echo "FINISH" . $order->id . PHP_EOL;
+
             }
-            echo "FINISH" . $order->id . PHP_EOL;
+            echo "FINISH count:" . count($orders) . PHP_EOL;
 
+            $finish_text = "Activate finish count: " . count($orders) . PHP_EOL;
+            $this->notifyTelegram($finish_text);
+
+        }catch (Exception $e){
+            $this->notifyTelegram($e->getMessage());
         }
-        echo "FINISH count:" . count($orders) . PHP_EOL;
-
-        $finish_text = "FINISH count:" . count($orders) . PHP_EOL;
-        $this->notifyTelegram($finish_text);
     }
 
     public function notifyTelegram($text)
@@ -439,14 +445,7 @@ class OrderService extends MainService
                 'chat_id' => 398981226,
                 'text' => $text,
             ]
-
         ]);
-
-//        try {
-//
-//        } catch (\Exception $e) {
-//            var_dump($e->getMessage());
-//        }
     }
 
     /**
