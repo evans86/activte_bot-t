@@ -11,6 +11,8 @@ use App\Models\User\SmsUser;
 use App\Services\External\BottApi;
 use App\Services\External\SmsActivateApi;
 use App\Services\MainService;
+use GuzzleHttp\Client;
+use GuzzleHttp\RequestOptions;
 use RuntimeException;
 
 class OrderService extends MainService
@@ -417,6 +419,27 @@ class OrderService extends MainService
             echo "FINISH" . $order->id . PHP_EOL;
 
         }
+        echo "FINISH count:" . count($orders) . PHP_EOL;
+    }
+
+    public function notifyTelegram($text)
+    {
+        $client = new Client();
+
+        $client->post('https://api.telegram.org/bot6331654488:AAEmDoHZLV6D3YYShrwdanKlWCbo9nBjQy4/sendMessage', [
+
+            RequestOptions::JSON => [
+                'chat_id' => 398981226,
+                'text' => $text,
+            ]
+
+        ]);
+
+//        try {
+//
+//        } catch (\Exception $e) {
+//            var_dump($e->getMessage());
+//        }
     }
 
     /**
