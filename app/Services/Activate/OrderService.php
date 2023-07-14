@@ -383,7 +383,7 @@ class OrderService extends MainService
     function cronUpdateStatus(): void
     {
         try {
-            $statuses = [SmsOrder::STATUS_O, SmsOrder::STATUS_WAIT_CODE, SmsOrder::STATUS_WAIT_RETRY];
+            $statuses = [SmsOrder::STATUS_OK, SmsOrder::STATUS_WAIT_CODE, SmsOrder::STATUS_WAIT_RETRY];
 
             $orders = SmsOrder::query()->whereIn('status', $statuses)
                 ->where('end_time', '<=', time())->get();
