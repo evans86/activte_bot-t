@@ -227,7 +227,7 @@ class OrderService extends MainService
     {
         $smsActivate = new SmsActivateApi($botDto->api_key, $botDto->resource_link);
         // Проверить уже отменёный
-        if ($order->status != SmsOrder::STATUS_CANCEL)
+        if ($order->status == SmsOrder::STATUS_CANCEL)
             throw new RuntimeException('The order has already been canceled');
         if ($order->status == SmsOrder::STATUS_FINISH)
             throw new RuntimeException('The order has not been canceled, the number has been activated, Status 10');
