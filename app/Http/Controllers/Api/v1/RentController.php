@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\v1;
 
 use App\Dto\BotFactory;
 use App\Helpers\ApiHelpers;
+use App\Helpers\BotLogHelpers;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\api\OrderResource;
 use App\Http\Resources\api\RentResource;
@@ -48,7 +49,9 @@ class RentController extends Controller
 
             return ApiHelpers::success($countries);
         } catch (Exception $e) {
-            return ApiHelpers::error($e->getMessage());
+            BotLogHelpers::notifyBotLog('(🔴Activate): ' . $e->getMessage());
+            \Log::error($e->getMessage());
+            return ApiHelpers::error('Rent countries error');
         }
     }
 
@@ -74,7 +77,9 @@ class RentController extends Controller
 
             return ApiHelpers::success($services);
         } catch (Exception $e) {
-            return ApiHelpers::error($e->getMessage());
+            BotLogHelpers::notifyBotLog('(🔴Activate): ' . $e->getMessage());
+            \Log::error($e->getMessage());
+            return ApiHelpers::error('Rent services error');
         }
     }
 
@@ -128,7 +133,9 @@ class RentController extends Controller
 
             return ApiHelpers::success($rentOrder);
         } catch (Exception $e) {
-            return ApiHelpers::error($e->getMessage());
+            BotLogHelpers::notifyBotLog('(🔴Activate): ' . $e->getMessage());
+            \Log::error($e->getMessage());
+            return ApiHelpers::error('Create rent order error');
         }
     }
 
@@ -169,7 +176,9 @@ class RentController extends Controller
 
             return ApiHelpers::success($result);
         } catch (Exception $e) {
-            return ApiHelpers::errorNew($e->getMessage());
+            BotLogHelpers::notifyBotLog('(🔴Activate): ' . $e->getMessage());
+            \Log::error($e->getMessage());
+            return ApiHelpers::error('Get rent orders error');
         }
     }
 
@@ -211,7 +220,9 @@ class RentController extends Controller
 
             return ApiHelpers::success(RentResource::generateRentArray($rent_order));
         } catch (RuntimeException $e) {
-            return ApiHelpers::errorNew($e->getMessage());
+            BotLogHelpers::notifyBotLog('(🔴Activate): ' . $e->getMessage());
+            \Log::error($e->getMessage());
+            return ApiHelpers::error('Get rent order error');
         }
     }
 
@@ -255,7 +266,9 @@ class RentController extends Controller
 
             return ApiHelpers::success(RentResource::generateRentArray($rent_order));
         } catch (Exception $e) {
-            return ApiHelpers::errorNew($e->getMessage());
+            BotLogHelpers::notifyBotLog('(🔴Activate): ' . $e->getMessage());
+            \Log::error($e->getMessage());
+            return ApiHelpers::error('Close rent orders error');
         }
     }
 
@@ -297,7 +310,9 @@ class RentController extends Controller
 
             return ApiHelpers::success(RentResource::generateRentArray($rent_order));
         } catch (Exception $e) {
-            return ApiHelpers::errorNew($e->getMessage());
+            BotLogHelpers::notifyBotLog('(🔴Activate): ' . $e->getMessage());
+            \Log::error($e->getMessage());
+            return ApiHelpers::error('Confirm rent orders error');
         }
     }
 
@@ -339,7 +354,9 @@ class RentController extends Controller
 
             return ApiHelpers::success($result);
         } catch (Exception $e) {
-            return ApiHelpers::errorNew($e->getMessage());
+            BotLogHelpers::notifyBotLog('(🔴Activate): ' . $e->getMessage());
+            \Log::error($e->getMessage());
+            return ApiHelpers::error('Continue rent price error');
         }
     }
 
@@ -388,10 +405,16 @@ class RentController extends Controller
 
             return ApiHelpers::success(RentResource::generateRentArray($rent_order));
         } catch (Exception $e) {
-            return ApiHelpers::errorNew($e->getMessage());
+            BotLogHelpers::notifyBotLog('(🔴Activate): ' . $e->getMessage());
+            \Log::error($e->getMessage());
+            return ApiHelpers::error('Continue rent order error');
         }
     }
 
+    /**
+     * @param Request $request
+     * @return array|string
+     */
     public function getTimePrice(Request $request)
     {
         try {
@@ -418,7 +441,9 @@ class RentController extends Controller
             return ApiHelpers::success($time_price);
 
         } catch (Exception $e) {
-            return ApiHelpers::errorNew($e->getMessage());
+            BotLogHelpers::notifyBotLog('(🔴Activate): ' . $e->getMessage());
+            \Log::error($e->getMessage());
+            return ApiHelpers::error('Time price rent error');
         }
     }
 
