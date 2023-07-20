@@ -25,7 +25,7 @@ class BotUpdateRequest extends FormRequest
             'category_id' => 'required|integer|min:1',
             'percent' => 'required|integer|min:-100',
             'color' => 'required|integer|min:1|max:6',
-            'black' => 'required|nullable|string',
+            'black' => 'nullable|string',
             'api_key' => 'required|string',
             'resource_link' => 'string|nullable',
         ];

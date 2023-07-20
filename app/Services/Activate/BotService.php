@@ -45,7 +45,7 @@ class BotService extends MainService
      */
     public function update(BotDto $dto): SmsBot
     {
-        $bot = SmsBot::query()->where('public_key', $dto->public_key)->where('private_key', $dto->private_key)->first();
+        $bot = SmsBot::query()->where('publ_key', $dto->public_key)->where('private_key', $dto->private_key)->first();
         if (empty($bot))
             return ApiHelpers::error('Not found module.');
         $bot->version = $dto->version;
