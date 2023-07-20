@@ -157,7 +157,7 @@ class OrderService extends MainService
             $user->service,
             $country_id
         );
-        $org_id = intval($serviceResult['actitionId']);
+        $org_id = intval($serviceResult['activationId']);
         // Из него получить цену
         $amountStart = intval(floatval($serviceResult['activationCost']) * 100);
         $amountFinal = $amountStart + $amountStart * $botDto->percent / 100;
