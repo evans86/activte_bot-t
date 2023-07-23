@@ -73,10 +73,10 @@ class OrderController extends Controller
 
             return ApiHelpers::success($result);
         } catch (RuntimeException $r) {
-            BotLogHelpers::notifyBotLog('(🔴R Activate): ' . $r->getMessage());
+            BotLogHelpers::notifyBotLog('(🔴R '.__FUNCTION__.' Activate): ' . $r->getMessage());
             return ApiHelpers::error($r->getMessage());
         } catch (Exception $e) {
-            BotLogHelpers::notifyBotLog('(🔴Activate): ' . $e->getMessage());
+            BotLogHelpers::notifyBotLog('(🔴E '.__FUNCTION__.' Activate): ' . $e->getMessage());
             \Log::error($e->getMessage());
             return ApiHelpers::error('Orders error');
         }
@@ -190,11 +190,11 @@ class OrderController extends Controller
             );
 
             return ApiHelpers::success($result);
-//        } catch (RuntimeException $r) {
-//            BotLogHelpers::notifyBotLog('(🔴R Activate): ' . $r->getMessage());
-//            return ApiHelpers::error($r->getMessage());
+        } catch (RuntimeException $r) {
+            BotLogHelpers::notifyBotLog('(🔴R '.__FUNCTION__.' Activate): ' . $r->getMessage());
+            return ApiHelpers::error($r->getMessage());
         } catch (Exception $e) {
-            BotLogHelpers::notifyBotLog('(🔴E Activate): ' . $e->getMessage());
+            BotLogHelpers::notifyBotLog('(🔴E '.__FUNCTION__.' Activate): ' . $e->getMessage());
             \Log::error($e->getMessage());
             return ApiHelpers::error('Create order error');
         }
