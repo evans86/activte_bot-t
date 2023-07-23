@@ -43,9 +43,11 @@ class ProductController extends Controller
             $products = $this->productService->getPricesCountry($bot);
 
             return ApiHelpers::success($products);
-
+        } catch (\RuntimeException $r) {
+            BotLogHelpers::notifyBotLog('(🔴R ' . __FUNCTION__ . ' Activate): ' . $r->getMessage());
+            return ApiHelpers::error($r->getMessage());
         } catch (\Exception $e) {
-            BotLogHelpers::notifyBotLog('(🔴Activate): ' . $e->getMessage());
+            BotLogHelpers::notifyBotLog('(🔴E ' . __FUNCTION__ . ' Activate): ' . $e->getMessage());
             \Log::error($e->getMessage());
             return ApiHelpers::error('Products error');
         }
@@ -69,9 +71,11 @@ class ProductController extends Controller
             $user = $this->userService->updateService($request->user_id, $request->service);
 
             return ApiHelpers::success(ProductResource::generateUserArray($user));
-
+        } catch (\RuntimeException $r) {
+            BotLogHelpers::notifyBotLog('(🔴R ' . __FUNCTION__ . ' Activate): ' . $r->getMessage());
+            return ApiHelpers::error($r->getMessage());
         } catch (\Exception $e) {
-            BotLogHelpers::notifyBotLog('(🔴Activate): ' . $e->getMessage());
+            BotLogHelpers::notifyBotLog('(🔴E ' . __FUNCTION__ . ' Activate): ' . $e->getMessage());
             \Log::error($e->getMessage());
             return ApiHelpers::error('Set service error');
         }
@@ -95,9 +99,11 @@ class ProductController extends Controller
             $countries = $this->productService->getServices($bot, $request->country);
 
             return ApiHelpers::success($countries);
-
+        } catch (\RuntimeException $r) {
+            BotLogHelpers::notifyBotLog('(🔴R ' . __FUNCTION__ . ' Activate): ' . $r->getMessage());
+            return ApiHelpers::error($r->getMessage());
         } catch (\Exception $e) {
-            BotLogHelpers::notifyBotLog('(🔴Activate): ' . $e->getMessage());
+            BotLogHelpers::notifyBotLog('(🔴E ' . __FUNCTION__ . ' Activate): ' . $e->getMessage());
             \Log::error($e->getMessage());
             return ApiHelpers::error('Get service error');
         }
