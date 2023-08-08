@@ -32,7 +32,7 @@
                                     <td class="text-center">Private: {{ $bot->public_key }}<br>Public: {{ $bot->private_key }}</td>
                                     <td class="text-center">{{ $bot->bot_id }}</td>
                                     <td class="text-center">{{ $bot->version }}</td>
-                                    <td class="text-center">API key: {{ $bot->api_key }}<br>Link: {{ $bot->resource_link }}</td>
+                                    <td class="text-center">API key: {{ $bot->api_key }}<br>Retail: {{ $bot->retail }}</td>
                                     <td class="text-center">{{ $bot->category_id }}</td>
                                     <td class="text-center">{{ $bot->percent }} %</td>
                                     <td class="text-center">{{ \App\Helpers\BotHelpers::balance($bot) }} руб.</td>
