@@ -54,11 +54,15 @@ class CountryService extends MainService
     {
         $smsActivate = new SmsActivateApi($bot->api_key, $bot->resource_link);
 
-        $countries = $smsActivate->getTopCountriesByService($service);
+        if($bot->retail == true){
+            $countries = $smsActivate->getPrices(null, $service);
 
-//        dd($countries);
+            return $this->formingRetailServices($countries, $service, $bot);
+        }else{
+            $countries = $smsActivate->getTopCountriesByService($service);
 
-        return $this->formingServicesArr($countries, $bot);
+            return $this->formingServicesArr($countries, $bot);
+        }
     }
 
     /**
@@ -79,6 +83,41 @@ class CountryService extends MainService
             $country = SmsCountry::updateOrCreate($data);
             $country->save();
         }
+    }
+
+    /**
+     * Формирование цены price из getPrices()
+     *
+     * @param $countries
+     * @param $service
+     * @param $bot
+     * @return array
+     */
+    public function formingRetailServices($countries, $service, $bot)
+    {
+        $result = [];
+
+        foreach ($countries as $key => $country) {
+
+            $smsCountry = SmsCountry::query()->where(['org_id' => $key])->first();
+
+            $price = $country[$service]["cost"];
+
+            $pricePercent = $price + ($price * ($bot->percent / 100));
+
+            array_push($result, [
+                'id' => $smsCountry->org_id,
+                'title_ru' => $smsCountry->name_ru,
+                'title_eng' => $smsCountry->name_en,
+                'image' => $smsCountry->image,
+                'count' => $country[$service]["count"],
+                'cost' => $pricePercent * 100,
+            ]);
+        }
+
+//        dd($result);
+
+        return $result;
     }
 
     /**

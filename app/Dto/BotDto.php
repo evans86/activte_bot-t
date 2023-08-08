@@ -14,6 +14,7 @@ class BotDto
     public int $version;
     public int $color;
     public ?string $black;
+    public int $retail;
     public string $resource_link;
 
     public function getArray(): array
@@ -29,6 +30,7 @@ class BotDto
             'version' => $this->version,
             'color' => $this->color,
             'black' => $this->black,
+            'retail' => $this->retail,
 //            'resource_link' => $this->resource_link,
         ];
     }

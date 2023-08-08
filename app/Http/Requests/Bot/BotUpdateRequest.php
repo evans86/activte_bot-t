@@ -28,6 +28,7 @@ class BotUpdateRequest extends FormRequest
             'black' => 'nullable|string',
             'api_key' => 'required|string',
             'resource_link' => 'string|nullable',
+            'retail' => 'string|integer',
         ];
     }
 
@@ -45,6 +46,7 @@ class BotUpdateRequest extends FormRequest
         $dto->category_id = intval($this->category_id);
         $dto->percent = intval($this->percent);
         $dto->color = intval($this->color);
+        $dto->retail = intval($this->retail);
         $dto->black = $this->black;
         $dto->version = intval($this->version);
         if(filter_var($this->resource_link, FILTER_VALIDATE_URL) === false)

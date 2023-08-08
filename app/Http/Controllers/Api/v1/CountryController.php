@@ -55,7 +55,7 @@ class CountryController extends Controller
         } catch (\Exception $e) {
             BotLogHelpers::notifyBotLog('(🔴E ' . __FUNCTION__ . ' Activate): ' . $e->getMessage());
             \Log::error($e->getMessage());
-            return ApiHelpers::error('Countries error');
+            return ApiHelpers::error($e->getMessage());
         }
 
     }
