@@ -54,7 +54,7 @@ class CountryService extends MainService
     {
         $smsActivate = new SmsActivateApi($bot->api_key, $bot->resource_link);
 
-        if($bot->retail == true){
+        if($bot->retail){
             $countries = $smsActivate->getPrices(null, $service);
 
             return $this->formingRetailServices($countries, $service, $bot);
