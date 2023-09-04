@@ -28,7 +28,7 @@ class SmsActivateApi
         return $this->request(array('api_key' => $this->apiKey, 'action' => __FUNCTION__), 'GET');
     }
 
-    public function getTopCountriesByService($service = '', $freePrice = false)
+    public function getTopCountriesByService($service = null, $freePrice = false)
     {
         $requestParam = array('api_key' => $this->apiKey, 'action' => __FUNCTION__, 'service' => $service, '$freePrice' => $freePrice);
         return $this->request($requestParam, 'POST', true);
