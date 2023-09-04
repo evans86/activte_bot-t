@@ -47,7 +47,10 @@ class CountryController extends Controller
             if (empty($bot))
                 return ApiHelpers::error('Not found module.');
 
-            $countries = $this->countryService->getPricesService($bot, $user->service);
+            if (is_null($user->service))
+                $countries = null;
+            else
+                $countries = $this->countryService->getPricesService($bot, $user->service);
             return ApiHelpers::success($countries);
         } catch (\RuntimeException $r) {
             BotLogHelpers::notifyBotLog('(🔴R ' . __FUNCTION__ . ' Activate): ' . $r->getMessage());
