@@ -39,6 +39,7 @@ class UserService extends MainService
             $user = new SmsUser();
             $user->telegram_id = $telegram_id;
             $user->language = SmsUser::LANGUAGE_RU;
+            $user->service = 'ig';
             if(!$user->save())
                 throw new RuntimeException('user not created');
         }
