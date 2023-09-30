@@ -236,7 +236,7 @@ class OrderService extends MainService
             throw new RuntimeException('The order has not been canceled, the number has been activated');
 
         // Обновить статус setStatus()
-        $result = $smsActivate->setStatus($order->org_id, SmsOrder::ACCESS_CANCEL);
+//        $result = $smsActivate->setStatus($order->org_id, SmsOrder::ACCESS_CANCEL);
         // Проверить статус getStatus()
 //        $result = $this->getStatus($order->org_id, $botDto);
 //        if ($result != SmsOrder::STATUS_CANCEL)
@@ -273,9 +273,9 @@ class OrderService extends MainService
         if ($order->status == SmsOrder::STATUS_FINISH)
             throw new RuntimeException('The order has not been canceled, the number has been activated, Status 10');
 
-        $result = $smsActivate->setStatus($order->org_id, SmsOrder::ACCESS_ACTIVATION);
-
-        $result = $this->getStatus($order->org_id, $botDto);
+//        $result = $smsActivate->setStatus($order->org_id, SmsOrder::ACCESS_ACTIVATION);
+//
+//        $result = $this->getStatus($order->org_id, $botDto);
 
         $order->status = SmsOrder::STATUS_FINISH;
 
