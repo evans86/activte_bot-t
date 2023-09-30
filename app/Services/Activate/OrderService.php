@@ -369,7 +369,7 @@ class OrderService extends MainService
                         }
                         break;
                     default:
-                        throw new RuntimeException('неизвестный статус!!!: ' . $resultStatus);
+                        throw new RuntimeException('неизвестный статус: ' . $resultStatus);
                 }
         }
     }
@@ -405,7 +405,7 @@ class OrderService extends MainService
                 );
                 echo $order->id . PHP_EOL;
 
-                $this->order($result['data'], $botDto, $order);
+//                $this->order($result['data'], $botDto, $order);
 
                 if (is_null($order->codes)) {
                     echo 'cancel_start' . PHP_EOL;
