@@ -59,12 +59,19 @@ class CountryService extends MainService
         $smsActivate = new SmsActivateApi($bot->api_key, $bot->resource_link);
 
         if($bot->retail){
-            $countries = $smsActivate->getPrices(null, $service);
+            $countries = \Cache::get('countries');
+            if($countries === null){
+                $countries = $smsActivate->getPrices(null, $service);
+                \Cache::put('countries', $countries, 15);
+            }
 
             return $this->formingRetailServices($countries, $service, $bot);
         }else{
-            $countries = $smsActivate->getTopCountriesByService($service);
-
+            $countries = \Cache::get('countries_retail');
+            if($countries === null){
+                $countries = $smsActivate->getTopCountriesByService($service);
+                \Cache::put('countries_retail', $countries, 15);
+            }
             return $this->formingServicesArr($countries, $bot);
         }
     }

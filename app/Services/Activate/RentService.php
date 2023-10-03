@@ -60,7 +60,11 @@ class RentService extends MainService
     {
         $smsActivate = new SmsActivateApi($botDto->api_key, $botDto->resource_link);
 
-        $resultRequest = $smsActivate->getRentServicesAndCountries($country);
+        $resultRequest = \Cache::get('services_rent');
+        if($resultRequest === null){
+            $resultRequest = $smsActivate->getRentServicesAndCountries($country);
+            \Cache::put('services_rent', $resultRequest, 15);
+        }
         $services = $resultRequest['services'];
 
         $result = [];
