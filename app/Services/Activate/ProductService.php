@@ -31,10 +31,19 @@ class ProductService extends MainService
         $smsActivate = new SmsActivateApi($bot->api_key, $bot->resource_link);
 
         if ($bot->resource_link == BotService::DEFAULT_HOST) {
-            $services = $smsActivate->getTopCountriesByService();
+
+            $services = \Cache::get('services_top_countries');
+            if($services === null){
+                $services = $smsActivate->getTopCountriesByService();
+                \Cache::put('services_top_countries', $services, 300);
+            }
             return $this->formingPricesArr($services, $bot);
         } else {
-            $services = $smsActivate->getPrices();
+            $services = \Cache::get('services_price');
+            if($services === null){
+                $services = $smsActivate->getPrices();
+                \Cache::put('services_price', $services, 300);
+            }
             return $this->formingPricesArr($services, $bot);
         }
     }
