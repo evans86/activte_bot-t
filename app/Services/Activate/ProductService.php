@@ -35,14 +35,14 @@ class ProductService extends MainService
             $services = \Cache::get('services_top_countries');
             if($services === null){
                 $services = $smsActivate->getTopCountriesByService();
-                \Cache::put('services_top_countries', $services, 300);
+                \Cache::put('services_top_countries', $services, 900);
             }
             return $this->formingPricesArr($services, $bot);
         } else {
             $services = \Cache::get('services_price');
             if($services === null){
                 $services = $smsActivate->getPrices();
-                \Cache::put('services_price', $services, 300);
+                \Cache::put('services_price', $services, 900);
             }
             return $this->formingPricesArr($services, $bot);
         }
