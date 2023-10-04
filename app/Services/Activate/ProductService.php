@@ -86,12 +86,11 @@ class ProductService extends MainService
     {
         $smsActivate = new SmsActivateApi($bot->api_key, $bot->resource_link);
 
-        $services = $smsActivate->getPrices($country);
-//        $services = \Cache::get('services_multi');
-//        if($services === null){
-//
-//            \Cache::put('services_multi', $services, 15);
-//        }
+        $services = \Cache::get('services_multi_' . $country);
+        if($services === null){
+            $services = $smsActivate->getPrices($country);
+            \Cache::put('services_multi_' . $country, $services, 15);
+        }
         $services = current($services);
 
         $result = [];
