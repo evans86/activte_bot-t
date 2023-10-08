@@ -106,8 +106,8 @@ class OrderService extends MainService
                         'start_time' => $dateTime,
                         'end_time' => $dateTime + 1177,
                         'operator' => null,
-                        'price_final' => $amountStart,
-                        'price_start' => $amountFinal,
+                        'price_final' => $amountFinal,
+                        'price_start' => $amountStart,
                     ];
 
                     $order = SmsOrder::create($data);
