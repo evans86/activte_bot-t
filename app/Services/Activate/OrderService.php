@@ -92,7 +92,7 @@ class OrderService extends MainService
                 if ($org_id == $active_org_id) {
                     //формирование цены для каждого заказа
                     $amountStart = intval(floatval($activateActiveOrder['activationCost']) * 100);
-                    $amountFinal = $amountStart + $amountStart * $botDto->percent / 100;
+                    $amountFinal = $amountStart + $amountStart * ($botDto->percent / 100);
 
                     $data = [
                         'bot_id' => $botDto->id,
