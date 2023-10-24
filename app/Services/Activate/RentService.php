@@ -281,7 +281,7 @@ class RentService extends MainService
 
         if ($rent_order->save()) {
             BottApi::createOrder($botDto, $userData, $rent_order->price_final,
-                'Заказ активации для номера ' . $rent_order->phone);
+                'Заказ аренды для номера ' . $rent_order->phone);
         } else {
             throw new RuntimeException('Not save order');
         }
