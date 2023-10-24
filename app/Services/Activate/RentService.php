@@ -12,7 +12,10 @@ use App\Models\User\SmsUser;
 use App\Services\External\BottApi;
 use App\Services\External\SmsActivateApi;
 use App\Services\MainService;
+use GuzzleHttp\Client;
+use GuzzleHttp\RequestOptions;
 use RuntimeException;
+use Exception;
 
 class RentService extends MainService
 {
@@ -27,7 +30,7 @@ class RentService extends MainService
         $smsActivate = new SmsActivateApi($botDto->api_key, $botDto->resource_link);
 
         $resultRequest = \Cache::get('countries_rent');
-        if($resultRequest === null){
+        if ($resultRequest === null) {
             $resultRequest = $smsActivate->getRentServicesAndCountries();
             \Cache::put('countries_rent', $resultRequest, 900);
         }
@@ -61,7 +64,7 @@ class RentService extends MainService
         $smsActivate = new SmsActivateApi($botDto->api_key, $botDto->resource_link);
 
         $resultRequest = \Cache::get('services_rent_' . $country);
-        if($resultRequest === null){
+        if ($resultRequest === null) {
             $resultRequest = $smsActivate->getRentServicesAndCountries($country);
             \Cache::put('services_rent_' . $country, $resultRequest, 15);
         }
@@ -363,7 +366,7 @@ class RentService extends MainService
 
         $rentOrder = RentOrder::query()->where(['org_id' => $rent_org_id])->first();
 
-        $new_codes = (string) $codes;
+        $new_codes = (string)$codes;
 
         $rentOrder->codes = $new_codes;
 
@@ -381,34 +384,58 @@ class RentService extends MainService
      */
     public function cronUpdateRentStatus(): void
     {
-        $statuses = [RentOrder::STATUS_WAIT_CODE];
+        try {
+            $statuses = [RentOrder::STATUS_WAIT_CODE];
 
-        $rent_orders = RentOrder::query()->whereIn('status', $statuses)
-            ->where('end_time', '<=', time())->get();
+            $rent_orders = RentOrder::query()->whereIn('status', $statuses)
+                ->where('end_time', '<=', time())->get();
 
-        echo "START count:" . count($rent_orders) . PHP_EOL;
+            echo "START Rent count: " . count($rent_orders) . PHP_EOL;
+            $start_text = "Activate Rent Start count: " . count($rent_orders) . PHP_EOL;
+            $this->notifyTelegram($start_text);
 
-        foreach ($rent_orders as $key => $rent_order) {
-            echo $rent_order->id . PHP_EOL;
+            foreach ($rent_orders as $key => $rent_order) {
+                echo $rent_order->id . PHP_EOL;
 
-            $bot = SmsBot::query()->where(['id' => $rent_order->bot_id])->first();
+                $bot = SmsBot::query()->where(['id' => $rent_order->bot_id])->first();
 
-            $botDto = BotFactory::fromEntity($bot);
-            $result = BottApi::get(
-                $rent_order->user->telegram_id,
-                $botDto->public_key,
-                $botDto->private_key
-            );
+                $botDto = BotFactory::fromEntity($bot);
+                $result = BottApi::get(
+                    $rent_order->user->telegram_id,
+                    $botDto->public_key,
+                    $botDto->private_key
+                );
 
-            echo 'confirm_start' . PHP_EOL;
-            $this->confirm(
-                $botDto,
-                $rent_order,
-                $result['data']
-            );
-            echo 'confirm_finish' . PHP_EOL;
+                echo 'confirm_start_rent' . PHP_EOL;
+                $this->confirm(
+                    $botDto,
+                    $rent_order,
+                    $result['data']
+                );
+                echo 'confirm_finish_rent' . PHP_EOL;
 
-            echo "FINISH" . $rent_order->id . PHP_EOL;
+                echo "FINISH Rent " . $rent_order->id . PHP_EOL;
+            }
+            echo "FINISH count: " . count($rent_orders) . PHP_EOL;
+
+            $finish_text = "Activate finish count: " . count($rent_orders) . PHP_EOL;
+            $this->notifyTelegram($finish_text);
+
+        } catch (Exception $e) {
+            $this->notifyTelegram('🔴' . $e->getMessage());
         }
+    }
+
+    public function notifyTelegram($text)
+    {
+        $client = new Client();
+
+        $client->post('https://api.telegram.org/bot6331654488:AAEmDoHZLV6D3YYShrwdanKlWCbo9nBjQy4/sendMessage', [
+
+            RequestOptions::JSON => [
+                'chat_id' => 398981226,
+                'text' => $text,
+            ]
+        ]);
     }
 }
