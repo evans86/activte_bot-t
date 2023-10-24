@@ -275,7 +275,7 @@ class RentService extends MainService
         if ($rent_order->status == RentOrder::STATUS_FINISH)
             throw new RuntimeException('The order has not been canceled, the number has been activated, Status 10');
 
-        $result = $smsActivate->setRentStatus($rent_order->org_id, RentOrder::ACCESS_FINISH);
+//        $result = $smsActivate->setRentStatus($rent_order->org_id, RentOrder::ACCESS_FINISH);
 
         $rent_order->status = RentOrder::STATUS_FINISH;
 
