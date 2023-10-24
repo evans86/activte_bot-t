@@ -363,9 +363,7 @@ class RentService extends MainService
 
         $rentOrder = RentOrder::query()->where(['org_id' => $rent_org_id])->first();
 
-        $new_codes = intval(preg_replace('/[^0-9]+/', '', $codes), 10);
-
-        $new_codes = (string) $new_codes;
+        $new_codes = (string) $codes;
 
         $rentOrder->codes = $new_codes;
 
