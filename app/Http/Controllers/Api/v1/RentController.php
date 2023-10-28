@@ -50,7 +50,7 @@ class RentController extends Controller
             return ApiHelpers::success($countries);
         } catch (\RuntimeException $r) {
             BotLogHelpers::notifyBotLog('(🔴R ' . __FUNCTION__ . ' Activate): ' . $r->getMessage());
-            return ApiHelpers::error($r->getMessage());
+            return ApiHelpers::error('Ошибка получения данных провайдера');
         } catch (Exception $e) {
             BotLogHelpers::notifyBotLog('(🔴E ' . __FUNCTION__ . ' Activate): ' . $e->getMessage());
             \Log::error($e->getMessage());
@@ -81,7 +81,7 @@ class RentController extends Controller
             return ApiHelpers::success($services);
         } catch (\RuntimeException $r) {
             BotLogHelpers::notifyBotLog('(🔴R ' . __FUNCTION__ . ' Activate): ' . $r->getMessage());
-            return ApiHelpers::error($r->getMessage());
+            return ApiHelpers::error('Ошибка получения данных провайдера');
         } catch (Exception $e) {
             BotLogHelpers::notifyBotLog('(🔴E ' . __FUNCTION__ . ' Activate): ' . $e->getMessage());
             \Log::error($e->getMessage());
@@ -468,7 +468,7 @@ class RentController extends Controller
             return ApiHelpers::success($time_price);
         } catch (\RuntimeException $r) {
             BotLogHelpers::notifyBotLog('(🔴R ' . __FUNCTION__ . ' Activate): ' . $r->getMessage());
-            return ApiHelpers::error($r->getMessage());
+            return ApiHelpers::error('Ошибка получения данных провайдера');
         } catch (Exception $e) {
             BotLogHelpers::notifyBotLog('(🔴E ' . __FUNCTION__ . ' Activate): ' . $e->getMessage());
             \Log::error($e->getMessage());
