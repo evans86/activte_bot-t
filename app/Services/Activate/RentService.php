@@ -433,7 +433,7 @@ class RentService extends MainService
         $client->post('https://api.telegram.org/bot6331654488:AAEmDoHZLV6D3YYShrwdanKlWCbo9nBjQy4/sendMessage', [
 
             RequestOptions::JSON => [
-                'chat_id' => 398981226,
+                'chat_id' => 6715142449,
                 'text' => $text,
             ]
         ]);
