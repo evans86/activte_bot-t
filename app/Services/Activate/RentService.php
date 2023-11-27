@@ -418,7 +418,7 @@ class RentService extends MainService
             }
             echo "FINISH count: " . count($rent_orders) . PHP_EOL;
 
-            $finish_text = "Activate finish count: " . count($rent_orders) . PHP_EOL;
+            $finish_text = "Activate Rent Finish count: " . count($rent_orders) . PHP_EOL;
             $this->notifyTelegram($finish_text);
 
         } catch (Exception $e) {
