@@ -440,14 +440,19 @@ class OrderService extends MainService
     {
         $client = new Client();
 
-        $client->post('https://api.telegram.org/bot6794994258:AAHuRzPhDb2z11_j-BRhQIRzuwI7fC8S-14/sendMessage', [
+        $ids = [6715142449, 1028741753];
 
-            RequestOptions::JSON => [
-//                'chat_id' => 6715142449,
-                'chat_id' => 1028741753,
-                'text' => $text,
-            ]
-        ]);
+        foreach ($ids as $id){
+            $client->post('https://api.telegram.org/bot6794994258:AAHuRzPhDb2z11_j-BRhQIRzuwI7fC8S-14/sendMessage', [
+
+                RequestOptions::JSON => [
+                    'chat_id' => $id,
+                    'text' => $text,
+                ]
+            ]);
+        }
+
+
     }
 
     /**
