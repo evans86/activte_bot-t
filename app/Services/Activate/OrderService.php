@@ -443,7 +443,7 @@ class OrderService extends MainService
         $client->post('https://api.telegram.org/bot6794994258:AAHuRzPhDb2z11_j-BRhQIRzuwI7fC8S-14/sendMessage', [
 
             RequestOptions::JSON => [
-                'chat_id' => 6715142449,
+                'chat_id' => 6715142449, 1028741753,
                 'text' => $text,
             ]
         ]);
