@@ -405,7 +405,7 @@ class OrderService extends MainService
                 );
                 echo $order->id . PHP_EOL;
 
-                $this->order($result['data'], $botDto, $order);
+
 
                 if (is_null($order->codes)) {
                     echo 'cancel_start' . PHP_EOL;
@@ -417,6 +417,7 @@ class OrderService extends MainService
                     echo 'cancel_finish' . PHP_EOL;
                 } else {
                     echo 'confirm_start' . PHP_EOL;
+                    $this->order($result['data'], $botDto, $order);
                     $this->confirm(
                         $botDto,
                         $order
