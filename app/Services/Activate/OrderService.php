@@ -374,6 +374,19 @@ class OrderService extends MainService
         }
     }
 
+    public function updateFlag(): void
+    {
+        $countries = SmsCountry::all();
+        echo "START count:" . count($countries) . PHP_EOL;
+
+        foreach ($countries as $key => $country) {
+            $country->image = 'https://smsactivate.s3.eu-central-1.amazonaws.com/assets/ico/country/' . $country->org_id . '.svg';
+            $country->save();
+        }
+
+        echo "FINISH count:" . count($countries) . PHP_EOL;
+    }
+
     /**
      * Крон обновление статусов
      *
