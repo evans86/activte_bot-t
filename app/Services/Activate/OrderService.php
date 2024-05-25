@@ -226,32 +226,47 @@ class OrderService extends MainService
     function cancel(array $userData, BotDto $botDto, SmsOrder $order)
     {
         $smsActivate = new SmsActivateApi($botDto->api_key, $botDto->resource_link);
+
         // Проверить уже отменёный
-        if ($order->status == SmsOrder::STATUS_CANCEL)
-            throw new RuntimeException('The order has already been canceled');
-        if ($order->status == SmsOrder::STATUS_FINISH)
-            throw new RuntimeException('The order has not been canceled, the number has been activated, Status 10');
-        // Можно отменить только статус 4 и кодов нет
-        if (!is_null($order->codes))
-            throw new RuntimeException('The order has not been canceled, the number has been activated');
+//        if ($order->status == SmsOrder::STATUS_CANCEL)
+//            throw new RuntimeException('The order has already been canceled');
+//        if ($order->status == SmsOrder::STATUS_FINISH)
+//            throw new RuntimeException('The order has not been canceled, the number has been activated, Status 10');
+//        // Можно отменить только статус 4 и кодов нет
+//        if (!is_null($order->codes))
+//            throw new RuntimeException('The order has not been canceled, the number has been activated');
 
         // Обновить статус setStatus()
-        $result = $smsActivate->setStatus($order->org_id, SmsOrder::ACCESS_CANCEL);
+        $smsActivate->setStatus($order->org_id, SmsOrder::ACCESS_CANCEL);
+
         // Проверить статус getStatus()
 //        $result = $this->getStatus($order->org_id, $botDto);
 //        if ($result != SmsOrder::STATUS_CANCEL)
 //            //надо писать лог
 //            throw new RuntimeException('При проверке статуса произошла ошибка, вернулся статус: ' . $result);
 
-        $order->status = SmsOrder::STATUS_CANCEL;
-        if ($order->save()) {
-            // Он же возвращает баланс
+//        $order->status = SmsOrder::STATUS_CANCEL;
+
+        // Возврат баланаса если номер не использовали
+        if (is_null($order->codes)) {
             $amountFinal = $order->price_final;
             $result = BottApi::addBalance($botDto, $userData, $amountFinal, 'Возврат баланса, активация отменена');
         } else {
-            throw new RuntimeException('Not save order');
+            throw new RuntimeException('Not save order service');
         }
         return $result;
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    public function updateStatusCancel($order_id): void
+    {
+        \DB::transaction(function () use ($order_id) {
+            $order = SmsOrder::lockForUpdate()->where(['org_id' => $order_id])->where(['status' => SmsOrder::STATUS_WAIT_CODE])->first();
+            $order->status = SmsOrder::STATUS_CANCEL;
+            $order->save();
+        });
     }
 
     /**
@@ -422,6 +437,7 @@ class OrderService extends MainService
 
                 if (is_null($order->codes)) {
                     echo 'cancel_start' . PHP_EOL;
+                    $this->updateStatusCancel($order->org_id);
                     $this->cancel(
                         $result['data'],
                         $botDto,

@@ -41,6 +41,7 @@ class RentCron extends Command
     {
         $rentService = new RentService();
         $rentService->cronUpdateRentStatus();
+//        $rentService->cronGuzzle();
         return 0;
     }
 }

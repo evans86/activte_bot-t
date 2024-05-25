@@ -73,10 +73,10 @@ class OrderController extends Controller
 
             return ApiHelpers::success($result);
         } catch (RuntimeException $r) {
-            BotLogHelpers::notifyBotLog('(🔴R '.__FUNCTION__.' Activate): ' . $r->getMessage());
+            BotLogHelpers::notifyBotLog('(🔴R ' . __FUNCTION__ . ' Activate): ' . $r->getMessage());
             return ApiHelpers::error($r->getMessage());
         } catch (Exception $e) {
-            BotLogHelpers::notifyBotLog('(🔴E '.__FUNCTION__.' Activate): ' . $e->getMessage());
+            BotLogHelpers::notifyBotLog('(🔴E ' . __FUNCTION__ . ' Activate): ' . $e->getMessage());
             \Log::error($e->getMessage());
             return ApiHelpers::error('Orders error');
         }
@@ -130,10 +130,10 @@ class OrderController extends Controller
 
             return ApiHelpers::success($result);
         } catch (RuntimeException $r) {
-            BotLogHelpers::notifyBotLog('(🔴R '.__FUNCTION__.' Activate): ' . $r->getMessage());
+            BotLogHelpers::notifyBotLog('(🔴R ' . __FUNCTION__ . ' Activate): ' . $r->getMessage());
             return ApiHelpers::error($r->getMessage());
         } catch (Exception $e) {
-            BotLogHelpers::notifyBotLog('(🔴E '.__FUNCTION__.' Activate): ' . $e->getMessage());
+            BotLogHelpers::notifyBotLog('(🔴E ' . __FUNCTION__ . ' Activate): ' . $e->getMessage());
             \Log::error($e->getMessage());
             return ApiHelpers::error('Create multi error');
         }
@@ -191,10 +191,10 @@ class OrderController extends Controller
 
             return ApiHelpers::success($result);
         } catch (RuntimeException $r) {
-            BotLogHelpers::notifyBotLog('(🔴R '.__FUNCTION__.' Activate): ' . $r->getMessage());
+            BotLogHelpers::notifyBotLog('(🔴R ' . __FUNCTION__ . ' Activate): ' . $r->getMessage());
             return ApiHelpers::error($r->getMessage());
         } catch (Exception $e) {
-            BotLogHelpers::notifyBotLog('(🔴E '.__FUNCTION__.' Activate): ' . $e->getMessage());
+            BotLogHelpers::notifyBotLog('(🔴E ' . __FUNCTION__ . ' Activate): ' . $e->getMessage());
             \Log::error($e->getMessage());
             return ApiHelpers::error('Create order error');
         }
@@ -246,10 +246,10 @@ class OrderController extends Controller
             $order = SmsOrder::query()->where(['org_id' => $request->order_id])->first();
             return ApiHelpers::success(OrderResource::generateOrderArray($order));
         } catch (RuntimeException $r) {
-            BotLogHelpers::notifyBotLog('(🔴R '.__FUNCTION__.' Activate): ' . $r->getMessage());
+            BotLogHelpers::notifyBotLog('(🔴R ' . __FUNCTION__ . ' Activate): ' . $r->getMessage());
             return ApiHelpers::error($r->getMessage());
         } catch (Exception $e) {
-            BotLogHelpers::notifyBotLog('(🔴E '.__FUNCTION__.' Activate): ' . $e->getMessage());
+            BotLogHelpers::notifyBotLog('(🔴E ' . __FUNCTION__ . ' Activate): ' . $e->getMessage());
             \Log::error($e->getMessage());
             return ApiHelpers::error('Get order error');
         }
@@ -300,10 +300,10 @@ class OrderController extends Controller
             $order = SmsOrder::query()->where(['org_id' => $request->order_id])->first();
             return ApiHelpers::success(OrderResource::generateOrderArray($order));
         } catch (RuntimeException $r) {
-            BotLogHelpers::notifyBotLog('(🔴R '.__FUNCTION__.' Activate): ' . $r->getMessage());
+            BotLogHelpers::notifyBotLog('(🔴R ' . __FUNCTION__ . ' Activate): ' . $r->getMessage());
             return ApiHelpers::error($r->getMessage());
         } catch (Exception $e) {
-            BotLogHelpers::notifyBotLog('(🔴E '.__FUNCTION__.' Activate): ' . $e->getMessage());
+            BotLogHelpers::notifyBotLog('(🔴E ' . __FUNCTION__ . ' Activate): ' . $e->getMessage());
             \Log::error($e->getMessage());
             return ApiHelpers::error('Second Sms error');
         }
@@ -354,10 +354,10 @@ class OrderController extends Controller
             $order = SmsOrder::query()->where(['org_id' => $request->order_id])->first();
             return ApiHelpers::success(OrderResource::generateOrderArray($order));
         } catch (RuntimeException $r) {
-            BotLogHelpers::notifyBotLog('(🔴R '.__FUNCTION__.' Activate): ' . $r->getMessage());
+            BotLogHelpers::notifyBotLog('(🔴R ' . __FUNCTION__ . ' Activate): ' . $r->getMessage());
             return ApiHelpers::error($r->getMessage());
         } catch (Exception $e) {
-            BotLogHelpers::notifyBotLog('(🔴E '.__FUNCTION__.' Activate): ' . $e->getMessage());
+            BotLogHelpers::notifyBotLog('(🔴E ' . __FUNCTION__ . ' Activate): ' . $e->getMessage());
             \Log::error($e->getMessage());
             return ApiHelpers::error('Confirm order error');
         }
@@ -384,7 +384,8 @@ class OrderController extends Controller
             $user = SmsUser::query()->where(['telegram_id' => $request->user_id])->first();
             if (is_null($request->order_id))
                 return ApiHelpers::error('Not found params: order_id');
-            $order = SmsOrder::query()->where(['org_id' => $request->order_id])->first();
+//            $order = SmsOrder::query()->where(['org_id' => $request->order_id])->first();
+
             if (is_null($request->user_secret_key))
                 return ApiHelpers::error('Not found params: user_secret_key');
             if (is_null($request->public_key))
@@ -404,15 +405,22 @@ class OrderController extends Controller
                 throw new RuntimeException($result['message']);
             }
 
-            $result = $this->orderService->cancel($result['data'], $botDto, $order);
+            $this->orderService->updateStatusCancel($request->order_id);
+            $order = SmsOrder::query()->where(['org_id' => $request->order_id])->first();
+
+            $result = $this->orderService->cancel(
+                $result['data'],
+                $botDto,
+                $order
+            );
 
             $order = SmsOrder::query()->where(['org_id' => $request->order_id])->first();
             return ApiHelpers::success(OrderResource::generateOrderArray($order));
         } catch (RuntimeException $r) {
-            BotLogHelpers::notifyBotLog('(🔴R '.__FUNCTION__.' Activate): ' . $r->getMessage());
+            BotLogHelpers::notifyBotLog('(🔴R ' . __FUNCTION__ . ' Activate): ' . $r->getMessage());
             return ApiHelpers::error($r->getMessage());
         } catch (Exception $e) {
-            BotLogHelpers::notifyBotLog('(🔴E '.__FUNCTION__.' Activate): ' . $e->getMessage());
+            BotLogHelpers::notifyBotLog('(🔴E ' . __FUNCTION__ . ' Activate): ' . $e->getMessage());
             \Log::error($e->getMessage());
             return ApiHelpers::error('Close order error');
         }
