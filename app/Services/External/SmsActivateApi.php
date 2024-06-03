@@ -219,7 +219,7 @@ class SmsActivateApi
 
 
 
-//        $serializedData = http_build_query($data);
+        $serializedData = http_build_query($data);
 
 
 
