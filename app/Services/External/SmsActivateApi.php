@@ -218,9 +218,10 @@ class SmsActivateApi
         }
 
         $serializedData = http_build_query($data);
+//        dd("$this->url?$serializedData");
 
 //        dd($serializedData);
-////        $serializedData = str_replace('&amp;', '&', $serializedData);
+        $serializedData = str_replace('&amp;', '&', $serializedData);
 //
 //        $context = stream_context_create(array(
 //            'http' => array(
@@ -241,6 +242,7 @@ class SmsActivateApi
 //            ]);
 //            $result = curl_exec($curl);
 //            curl_close($curl);
+            ini_set('user_agent', 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:9.0) Gecko/20100101 Firefox/9.0');
             $result = file_get_contents("$this->url?$serializedData");
 
             if ($getNumber == 3) {
