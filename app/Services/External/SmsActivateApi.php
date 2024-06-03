@@ -218,6 +218,7 @@ class SmsActivateApi
         }
 
         $serializedData = http_build_query($data);
+        $serializedData = str_replace('&amp;', '&', $serializedData);
 
         if ($method === 'GET') {
             $result = file_get_contents("$this->url?$serializedData");
@@ -330,7 +331,7 @@ class SmsActivateApi
 //            if ($getNumber == 3){
 //                return $result['price'];
 //            }else{
-                return $result;
+            return $result;
 
         }
         return $result;
