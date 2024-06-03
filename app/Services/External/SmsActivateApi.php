@@ -242,8 +242,9 @@ class SmsActivateApi
 //            ]);
 //            $result = curl_exec($curl);
 //            curl_close($curl);
-            ini_set('user_agent', 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:9.0) Gecko/20100101 Firefox/9.0');
-            $result = file_get_contents("$this->url?$serializedData");
+
+            $context = stream_context_create(['http' => ['ignore_errors' => true]]);
+            $result = file_get_contents("$this->url?$serializedData", false, $context);
 
             if ($getNumber == 3) {
                 $parsedResponse = explode(':', $result);
