@@ -217,11 +217,7 @@ class SmsActivateApi
             throw new InvalidArgumentException('Method can only be GET or POST');
         }
 
-
-
         $serializedData = http_build_query($data);
-
-
 
 //        dd($serializedData);
 ////        $serializedData = str_replace('&amp;', '&', $serializedData);
@@ -233,19 +229,19 @@ class SmsActivateApi
 //        ));
 
         if ($method === 'GET') {
-            $curl = curl_init();
-            curl_setopt_array($curl, [
-                CURLOPT_RETURNTRANSFER => 1,
-                CURLOPT_URL => $this->url,
-                CURLOPT_POST => 1,
-                CURLOPT_POSTFIELDS => $data,
-                CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ' .
-                    'AppleWebKit/537.36 (KHTML, like Gecko) ' .
-                    'Chrome/58.0.3029.110 Safari/537.36'
-            ]);
-            $result = curl_exec($curl);
-            curl_close($curl);
-//            $result = file_get_contents("$this->url?$serializedData");
+//            $curl = curl_init();
+//            curl_setopt_array($curl, [
+//                CURLOPT_RETURNTRANSFER => 1,
+//                CURLOPT_URL => $this->url,
+//                CURLOPT_POST => 1,
+//                CURLOPT_POSTFIELDS => $data,
+//                CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ' .
+//                    'AppleWebKit/537.36 (KHTML, like Gecko) ' .
+//                    'Chrome/58.0.3029.110 Safari/537.36'
+//            ]);
+//            $result = curl_exec($curl);
+//            curl_close($curl);
+            $result = file_get_contents("$this->url?$serializedData");
 
             if ($getNumber == 3) {
                 $parsedResponse = explode(':', $result);
