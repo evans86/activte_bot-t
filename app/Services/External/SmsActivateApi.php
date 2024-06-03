@@ -230,19 +230,6 @@ class SmsActivateApi
 //        ));
 
         if ($method === 'GET') {
-//            $curl = curl_init();
-//            curl_setopt_array($curl, [
-//                CURLOPT_RETURNTRANSFER => 1,
-//                CURLOPT_URL => $this->url,
-//                CURLOPT_POST => 1,
-//                CURLOPT_POSTFIELDS => $data,
-//                CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ' .
-//                    'AppleWebKit/537.36 (KHTML, like Gecko) ' .
-//                    'Chrome/58.0.3029.110 Safari/537.36'
-//            ]);
-//            $result = curl_exec($curl);
-//            curl_close($curl);
-
 //            $context = stream_context_create(
 //                array(
 //                    "http" => array(
@@ -256,15 +243,15 @@ class SmsActivateApi
 //                    )
 //                )
 //            );
-            $url = "$this->url?$serializedData";
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $url);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($ch,CURLOPT_USERAGENT,'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13');
-            $result = curl_exec($ch);
-            curl_close($ch);
+//            $url = "$this->url?$serializedData";
+//            $ch = curl_init();
+//            curl_setopt($ch, CURLOPT_URL, $url);
+//            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+//            curl_setopt($ch,CURLOPT_USERAGENT,'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13');
+//            $result = curl_exec($ch);
+//            curl_close($ch);
 
-//            $result = file_get_contents("$this->url?$serializedData");
+            $result = file_get_contents("$this->url?$serializedData");
 
             if ($getNumber == 3) {
                 $parsedResponse = explode(':', $result);
