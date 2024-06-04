@@ -219,42 +219,9 @@ class SmsActivateApi
         }
 
         $serializedData = http_build_query($data);
-//        dd("$this->url?$serializedData");
-
-//        dd($serializedData);
         $serializedData = str_replace('&amp;', '&', $serializedData);
-//
-//        $context = stream_context_create(array(
-//            'http' => array(
-//                'header' => array('User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; rv:2.2) Gecko/20110201'),
-//            ),
-//        ));
 
         if ($method === 'GET') {
-//            $context = stream_context_create(
-//                array(
-//                    "http" => array(
-//                        "header" => "User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64)
-//                            AppleWebKit/537.36 (KHTML, like Gecko)
-//                            Chrome/50.0.2661.102 Safari/537.36\r\n" .
-//                            "accept: text/html,application/xhtml+xml,application/xml;q=0.9,
-//                            image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3\r\n" .
-//                            "accept-language: es-ES,es;q=0.9,en;q=0.8,it;q=0.7\r\n" .
-//                            "accept-encoding: gzip, deflate, br\r\n"
-//                    )
-//                )
-//            );
-//            $url = "$this->url?$serializedData";
-//            $ch = curl_init();
-//            curl_setopt($ch, CURLOPT_URL, $url);
-//            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-//            curl_setopt($ch,CURLOPT_USERAGENT,'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13');
-//            $result = curl_exec($ch);
-//            curl_close($ch);
-
-//            $client = new Client(['base_uri' => $this->url]);
-//            $response = $client->get($this->url . '?' . $serializedData);
-//            $result = $response->getBody()->getContents();
 
             $result = file_get_contents("$this->url?$serializedData");
 
