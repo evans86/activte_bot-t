@@ -2,11 +2,8 @@
 
 namespace App\Services\External;
 
-use App\Helpers\BotLogHelpers;
 use App\Helpers\OrdersHelper;
-use GuzzleHttp\Client;
 use http\Exception\InvalidArgumentException;
-use PHPUnit\TextUI\RuntimeException;
 
 class SmsActivateApi
 {
@@ -206,27 +203,6 @@ class SmsActivateApi
         return $this->requestRent($requestParam, 'POST', true, 3);
     }
 
-    public function sendRequest($data, $count)
-    {
-        if ($count == 5)
-            throw new RuntimeException('Превышен лимит подключений!');
-        try {
-            $client = new Client(['base_uri' => $this->url]);
-            $response = $client->get('?' . $data,
-                [
-                    'proxy' => 'http://VtZNR9Hb:nXC9nQ45@45.147.246.121:64614',
-                ]
-            );
-        } catch (\Throwable $e) {
-            if (strpos($e->getMessage(), 'cURL') !== false) {
-                $this->sendRequest($data, $count + 1);
-            }
-            throw new RuntimeException($e->getMessage());
-        }
-
-        return $response->getBody()->getContents();
-    }
-
     /**
      * @param $data
      * @param $method
@@ -242,20 +218,40 @@ class SmsActivateApi
         }
 
         $serializedData = http_build_query($data);
+//        dd("$this->url?$serializedData");
 
+//        dd($serializedData);
         $serializedData = str_replace('&amp;', '&', $serializedData);
+//
+//        $context = stream_context_create(array(
+//            'http' => array(
+//                'header' => array('User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; rv:2.2) Gecko/20110201'),
+//            ),
+//        ));
 
         if ($method === 'GET') {
+//            $context = stream_context_create(
+//                array(
+//                    "http" => array(
+//                        "header" => "User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64)
+//                            AppleWebKit/537.36 (KHTML, like Gecko)
+//                            Chrome/50.0.2661.102 Safari/537.36\r\n" .
+//                            "accept: text/html,application/xhtml+xml,application/xml;q=0.9,
+//                            image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3\r\n" .
+//                            "accept-language: es-ES,es;q=0.9,en;q=0.8,it;q=0.7\r\n" .
+//                            "accept-encoding: gzip, deflate, br\r\n"
+//                    )
+//                )
+//            );
+//            $url = "$this->url?$serializedData";
+//            $ch = curl_init();
+//            curl_setopt($ch, CURLOPT_URL, $url);
+//            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+//            curl_setopt($ch,CURLOPT_USERAGENT,'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13');
+//            $result = curl_exec($ch);
+//            curl_close($ch);
 
-//            $result = file_get_contents("$this->url?$serializedData");
-
-            try {
-                $result = $this->sendRequest($serializedData, 1);
-            } catch (\Throwable $e) {
-                BotLogHelpers::notifyBotLog('(E ' . __FUNCTION__ . ' ACTIVATE): ' . $e->getMessage());
-                \Log::error($e->getMessage());
-                throw new RuntimeException('Ошибка соединения с сервером!');
-            }
+            $result = file_get_contents("$this->url?$serializedData");
 
             if ($getNumber == 3) {
                 $parsedResponse = explode(':', $result);
