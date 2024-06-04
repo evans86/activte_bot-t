@@ -271,21 +271,18 @@ class SmsActivateApi
             $result = json_decode(preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $json_string), true);
             return $result;
         } else {
-
-//            $options = array(
-//                'http' => array(
-//                    'header' => "Content-type: application/x-www-form-urlencoded",
-//                    'method' => 'POST',
-//                    'content' => $serializedData
-//                )
-//            );
-//            $context = stream_context_create($options);
-//            $result = file_get_contents($this->url, false, $context);
-
-            $client = new Client(['base_uri' => $this->url]);
-            $response = $client->get($this->url . '?' . http_build_query($serializedData));
-            $result = $response->getBody()->getContents();
-//
+            $options = array(
+                'http' => array(
+//                    'header' => "Content-type: application/x-www-form-urlencoded\r\n",
+                    'method' => 'POST',
+                    'proxy' =>  'http://VtZNR9Hb:nXC9nQ45@45.147.246.121:64614',
+                    'request_fulluri' => true,
+                    'content' => $serializedData
+                )
+            );
+            $context = stream_context_create($options);
+            $result = file_get_contents($this->url, false, $context);
+//            dd($result);
             if ($getNumber == 1) {
                 return OrdersHelper::requestArray($result);
             }
