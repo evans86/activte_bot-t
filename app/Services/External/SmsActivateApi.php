@@ -247,7 +247,7 @@ class SmsActivateApi
 
         if ($method === 'GET') {
 
-            $result = file_get_contents("$this->url?$serializedData");
+//            $result = file_get_contents("$this->url?$serializedData");
 
             try {
                 $result = $this->sendRequest($serializedData, 1);
