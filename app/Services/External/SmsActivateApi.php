@@ -283,7 +283,7 @@ class SmsActivateApi
 //            $result = file_get_contents($this->url, false, $context);
 
             $client = new Client(['base_uri' => $this->url]);
-            $response = $client->get($this->url . '?' . http_build_query($serializedData));
+            $response = $client->post($this->url . '?' . http_build_query($serializedData));
             $result = $response->getBody()->getContents();
 //
             if ($getNumber == 1) {
