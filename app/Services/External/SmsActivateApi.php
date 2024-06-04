@@ -275,7 +275,7 @@ class SmsActivateApi
                 'http' => array(
 //                    'header' => "Content-type: application/x-www-form-urlencoded\r\n",
                     'method' => 'POST',
-                    'proxy' =>  'http://VtZNR9Hb:nXC9nQ45@45.147.246.121:64614',
+                    'proxy' =>  'https://VtZNR9Hb:nXC9nQ45@45.147.246.121:64614',
                     'request_fulluri' => true,
                     'content' => $serializedData
                 )
