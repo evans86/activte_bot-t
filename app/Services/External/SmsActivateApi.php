@@ -252,11 +252,11 @@ class SmsActivateApi
 //            $result = curl_exec($ch);
 //            curl_close($ch);
 
-            $client = new Client(['base_uri' => $this->url]);
-            $response = $client->get($this->url . '?' . $serializedData);
-            $result = $response->getBody()->getContents();
+//            $client = new Client(['base_uri' => $this->url]);
+//            $response = $client->get($this->url . '?' . $serializedData);
+//            $result = $response->getBody()->getContents();
 
-//            $result = file_get_contents("$this->url?$serializedData");
+            $result = file_get_contents("$this->url?$serializedData");
 
             if ($getNumber == 3) {
                 $parsedResponse = explode(':', $result);
@@ -273,7 +273,8 @@ class SmsActivateApi
         } else {
             $options = array(
                 'http' => array(
-                    'header' => "User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36",
+                    'header' => "Content-type: application/x-www-form-urlencoded\r\n",
+                    'proxy' => 'http://VtZNR9Hb:nXC9nQ45@45.147.246.121:64614',
                     'method' => 'POST',
                     'content' => $serializedData
                 )
