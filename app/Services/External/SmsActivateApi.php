@@ -3,6 +3,7 @@
 namespace App\Services\External;
 
 use App\Helpers\OrdersHelper;
+use GuzzleHttp\Client;
 use http\Exception\InvalidArgumentException;
 
 class SmsActivateApi
@@ -251,7 +252,11 @@ class SmsActivateApi
 //            $result = curl_exec($ch);
 //            curl_close($ch);
 
-            $result = file_get_contents("$this->url?$serializedData");
+            $client = new Client(['base_uri' => $this->url]);
+            $response = $client->get($this->url . '?' . $serializedData);
+            $result = $response->getBody()->getContents();
+
+//            $result = file_get_contents("$this->url?$serializedData");
 
             if ($getNumber == 3) {
                 $parsedResponse = explode(':', $result);
