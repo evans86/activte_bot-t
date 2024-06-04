@@ -271,9 +271,13 @@ class SmsActivateApi
             $result = json_decode(preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $json_string), true);
             return $result;
         } else {
+            $header = array(
+                "Content-Type: application/x-www-form-urlencoded"
+            );
             $options = array(
                 'http' => array(
-                    "header" => "User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36",
+//                    'header' => "Content-type: application/x-www-form-urlencoded",
+                    'header' => implode("\r\n", $header),
                     'method' => 'POST',
                     'content' => $serializedData
                 )
