@@ -272,17 +272,20 @@ class SmsActivateApi
             return $result;
         } else {
 
-            $options = array(
-                'http' => array(
-                    'header' => "Content-type: application/x-www-form-urlencoded",
-                    'ignore_errors' => true,
-                    'method' => 'POST',
-                    'content' => $serializedData
-                )
-            );
-            $context = stream_context_create($options);
-            $result = file_get_contents($this->url, false, $context);
-//            dd($result);
+//            $options = array(
+//                'http' => array(
+//                    'header' => "Content-type: application/x-www-form-urlencoded",
+//                    'method' => 'POST',
+//                    'content' => $serializedData
+//                )
+//            );
+//            $context = stream_context_create($options);
+//            $result = file_get_contents($this->url, false, $context);
+
+            $client = new Client(['base_uri' => $this->url]);
+            $response = $client->get($this->url . '?' . http_build_query($serializedData));
+            $result = $response->getBody()->getContents();
+//
             if ($getNumber == 1) {
                 return OrdersHelper::requestArray($result);
             }
