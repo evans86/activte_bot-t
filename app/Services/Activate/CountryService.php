@@ -60,20 +60,22 @@ class CountryService extends MainService
 
         if($bot->retail){
 
-//            $countries = \Cache::get('countries_' . $service);
-//            if($countries === null){
+            $countries = \Cache::get('countries_' . $service);
+            if($countries === null){
                 $countries = $smsActivate->getPrices(null, $service);
-//                \Cache::put('countries_' . $service, $countries, 15);
-//            }
+//                dd($countries);
+                \Cache::put('countries_' . $service, $countries, 15);
+            }
 
             return $this->formingRetailServices($countries, $service, $bot);
         }else{
 
-//            $countries = \Cache::get('countries_retail_' . $service);
-//            if($countries === null){
+            $countries = \Cache::get('countries_retail_' . $service);
+            if($countries === null){
                 $countries = $smsActivate->getTopCountriesByService($service);
+//            dd($countries);
                 \Cache::put('countries_retail_' . $service, $countries, 15);
-//            }
+            }
             return $this->formingServicesArr($countries, $bot);
         }
     }
@@ -109,15 +111,20 @@ class CountryService extends MainService
     public function formingRetailServices($countries, $service, $bot)
     {
         $result = [];
-
+//        dd($countries);
         foreach ($countries as $key => $country) {
+            if (!array_key_exists($service, $country))
+                continue;
 
+//            dd($country);
             $smsCountry = SmsCountry::query()->where(['org_id' => $key])->first();
+//            dd($smsCountry->org_id);
 
             $price = $country[$service]["cost"];
+//            dd($price);
 
             $pricePercent = $price + ($price * ($bot->percent / 100));
-
+//            dd($pricePercent);
             array_push($result, [
                 'id' => $smsCountry->org_id,
                 'title_ru' => $smsCountry->name_ru,

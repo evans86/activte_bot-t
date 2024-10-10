@@ -224,6 +224,7 @@ class SmsActivateApi
         if ($method === 'GET') {
 
             $result = file_get_contents("$this->url?$serializedData");
+//            dd($result);
 
             if ($getNumber == 3) {
                 $parsedResponse = explode(':', $result);
