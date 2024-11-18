@@ -206,17 +206,27 @@ class SmsActivateApi
         return $this->requestRent($requestParam, 'POST', true, 3);
     }
 
-    public function sendRequest($data, $count)
+    public function sendRequest($data, $count, $method = null, $context = null)
     {
         if ($count == 5)
             throw new RuntimeException('Превышен лимит подключений!');
         try {
             $client = new Client(['base_uri' => $this->url]);
-            $response = $client->get('?' . $data,
-                [
-                    'proxy' => 'http://VtZNR9Hb:nXC9nQ45@45.147.246.121:64614',
-                ]
-            );
+            if ($method === 'GET'){
+                $response = $client->get('?' . $data,
+                    [
+                        'proxy' => 'http://VtZNR9Hb:nXC9nQ45@45.147.246.121:64614',
+                    ]
+                );
+            }else{
+                $response = $client->post('?' . $data,
+                    [
+                        $context,
+                        'proxy' => 'http://VtZNR9Hb:nXC9nQ45@45.147.246.121:64614',
+                    ]
+                );
+            }
+
         } catch (\Throwable $e) {
             if (strpos($e->getMessage(), 'cURL') !== false) {
                 $this->sendRequest($data, $count + 1);
@@ -291,6 +301,15 @@ class SmsActivateApi
                 )
             );
             $context = stream_context_create($options);
+
+            try {
+                $result = $this->sendRequest($serializedData, 1, 'POST', $context);
+            } catch (\Throwable $e) {
+                BotLogHelpers::notifyBotLog('(🔴E ' . __FUNCTION__ . ' Activate): ' . $e->getMessage());
+                \Log::error($e->getMessage());
+                throw new RuntimeException('Ошибка соединения с сервером!');
+            }
+
             $result = file_get_contents($this->url, false, $context);
 //            dd($result);
             if ($getNumber == 1) {
