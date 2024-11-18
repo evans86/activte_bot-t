@@ -246,7 +246,6 @@ class SmsActivateApi
 
         if ($method === 'GET') {
 
-            $result = file_get_contents("$this->url?$serializedData");
 //            dd($result);
             if ($getNumber == 11) {
                 try {
@@ -257,6 +256,8 @@ class SmsActivateApi
                     throw new RuntimeException('Ошибка соединения с сервером!');
                 }
             }
+
+            $result = file_get_contents("$this->url?$serializedData");
 
             if ($getNumber == 3) {
                 $parsedResponse = explode(':', $result);
