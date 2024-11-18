@@ -260,15 +260,15 @@ class SmsActivateApi
                 return $result;
             }
 
-//            $result = file_get_contents("$this->url?$serializedData");
+            $result = file_get_contents("$this->url?$serializedData");
 
-            try {
-                $result = $this->sendRequest($serializedData, 1);
-            } catch (\Throwable $e) {
-                BotLogHelpers::notifyBotLog('(🟠E ' . __FUNCTION__ . ' Hub): ' . $e->getMessage());
-                \Log::error($e->getMessage());
-                throw new RuntimeException('Ошибка соединения с сервером!');
-            }
+//            try {
+//                $result = $this->sendRequest($serializedData, 1);
+//            } catch (\Throwable $e) {
+//                BotLogHelpers::notifyBotLog('(🟠E ' . __FUNCTION__ . ' Hub): ' . $e->getMessage());
+//                \Log::error($e->getMessage());
+//                throw new RuntimeException('Ошибка соединения с сервером!');
+//            }
 
             if ($getNumber == 3) {
                 $parsedResponse = explode(':', $result);
