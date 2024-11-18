@@ -242,11 +242,11 @@ class SmsActivateApi
         }
 
         $serializedData = http_build_query($data);
-        $serializedData = str_replace('&amp;', '&', $serializedData);
+//        $serializedData = str_replace('&amp;', '&', $serializedData);
 
         if ($method === 'GET') {
 
-            $result = file_get_contents("$this->url?$serializedData");
+//            $result = file_get_contents("$this->url?$serializedData");
 //            dd($result);
 
             try {
