@@ -337,7 +337,14 @@ class SmsActivateApi
 
         if ($method === 'GET') {
             $request_url = "$this->url?$serializedData";
-            $result = file_get_contents($request_url);
+//            $result = file_get_contents($request_url);
+            try {
+                $result = $this->sendRequest($serializedData, 1);
+            } catch (\Throwable $e) {
+                BotLogHelpers::notifyBotLog('(🟠E ' . __FUNCTION__ . ' Activate): ' . $e->getMessage());
+                \Log::error($e->getMessage());
+                throw new RuntimeException('Ошибка соединения с сервером!');
+            }
         } else {
             $options = array(
                 'http' => array(
@@ -347,14 +354,8 @@ class SmsActivateApi
                 )
             );
             $context = stream_context_create($options);
-//            $result = file_get_contents($this->url, false, $context);
-            try {
-                $result = $this->sendRequest($serializedData, 1);
-            } catch (\Throwable $e) {
-                BotLogHelpers::notifyBotLog('(🟠E ' . __FUNCTION__ . ' Activate): ' . $e->getMessage());
-                \Log::error($e->getMessage());
-                throw new RuntimeException('Ошибка соединения с сервером!');
-            }
+            $result = file_get_contents($this->url, false, $context);
+
         }
         if ($getNumber == 1) {
             $result = json_decode($result, true);
