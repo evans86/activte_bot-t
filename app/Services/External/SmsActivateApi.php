@@ -2,9 +2,11 @@
 
 namespace App\Services\External;
 
+use App\Helpers\BotLogHelpers;
 use App\Helpers\OrdersHelper;
 use GuzzleHttp\Client;
 use http\Exception\InvalidArgumentException;
+use PHPUnit\TextUI\RuntimeException;
 
 class SmsActivateApi
 {
@@ -204,6 +206,27 @@ class SmsActivateApi
         return $this->requestRent($requestParam, 'POST', true, 3);
     }
 
+    public function sendRequest($data, $count)
+    {
+        if ($count == 5)
+            throw new RuntimeException('Превышен лимит подключений!');
+        try {
+            $client = new Client(['base_uri' => $this->url]);
+            $response = $client->get('?' . $data,
+                [
+                    'proxy' => 'http://VtZNR9Hb:nXC9nQ45@45.147.246.121:64614',
+                ]
+            );
+        } catch (\Throwable $e) {
+            if (strpos($e->getMessage(), 'cURL') !== false) {
+                $this->sendRequest($data, $count + 1);
+            }
+            throw new RuntimeException($e->getMessage());
+        }
+
+        return $response->getBody()->getContents();
+    }
+
     /**
      * @param $data
      * @param $method
@@ -225,6 +248,14 @@ class SmsActivateApi
 
             $result = file_get_contents("$this->url?$serializedData");
 //            dd($result);
+
+            try {
+                $result = $this->sendRequest($serializedData, 1);
+            } catch (\Throwable $e) {
+                BotLogHelpers::notifyBotLog('(🟠E ' . __FUNCTION__ . ' Activate): ' . $e->getMessage());
+                \Log::error($e->getMessage());
+                throw new RuntimeException('Ошибка соединения с сервером!');
+            }
 
             if ($getNumber == 3) {
                 $parsedResponse = explode(':', $result);
