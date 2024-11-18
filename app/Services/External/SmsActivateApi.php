@@ -114,7 +114,7 @@ class SmsActivateApi
 
     public function getCountries()
     {
-        return $this->request(array('api_key' => $this->apiKey, 'action' => __FUNCTION__), 'GET', true);
+        return $this->request(array('api_key' => $this->apiKey, 'action' => __FUNCTION__), 'GET', true, 11);
     }
 
     public function getActiveActivations()
@@ -347,7 +347,14 @@ class SmsActivateApi
                 )
             );
             $context = stream_context_create($options);
-            $result = file_get_contents($this->url, false, $context);
+//            $result = file_get_contents($this->url, false, $context);
+            try {
+                $result = $this->sendRequest($serializedData, 1);
+            } catch (\Throwable $e) {
+                BotLogHelpers::notifyBotLog('(🟠E ' . __FUNCTION__ . ' Activate): ' . $e->getMessage());
+                \Log::error($e->getMessage());
+                throw new RuntimeException('Ошибка соединения с сервером!');
+            }
         }
         if ($getNumber == 1) {
             $result = json_decode($result, true);
