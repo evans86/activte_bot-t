@@ -34,7 +34,7 @@ class SmsActivateApi
     public function getTopCountriesByService($service = null, $freePrice = false)
     {
         $requestParam = array('api_key' => $this->apiKey, 'action' => __FUNCTION__, 'service' => $service, '$freePrice' => $freePrice);
-        return $this->request($requestParam, 'POST', true, 11);
+        return $this->request($requestParam, 'POST', true);
     }
 
     public function getNumbersStatus($country = null, $operator = null)
@@ -143,7 +143,7 @@ class SmsActivateApi
             $requestParam['service'] = $service;
         }
 
-        return $this->request($requestParam, 'GET', true, 11);
+        return $this->request($requestParam, 'GET', true);
     }
 
     public function getRentServicesAndCountries($country = "0", $time = 4, $operator = "any")
@@ -246,17 +246,17 @@ class SmsActivateApi
 
         if ($method === 'GET') {
 
-//            $result = file_get_contents("$this->url?$serializedData");
+            $result = file_get_contents("$this->url?$serializedData");
 //            dd($result);
-            if ($getNumber == 11) {
-                try {
-                    $result = $this->sendRequest($serializedData, 1);
-                } catch (\Throwable $e) {
-                    BotLogHelpers::notifyBotLog('(🟠E ' . __FUNCTION__ . ' Activate): ' . $e->getMessage());
-                    \Log::error($e->getMessage());
-                    throw new RuntimeException('Ошибка соединения с сервером!');
-                }
-            }
+//            if ($getNumber == 11) {
+//                try {
+//                    $result = $this->sendRequest($serializedData, 1);
+//                } catch (\Throwable $e) {
+//                    BotLogHelpers::notifyBotLog('(🟠E ' . __FUNCTION__ . ' Activate): ' . $e->getMessage());
+//                    \Log::error($e->getMessage());
+//                    throw new RuntimeException('Ошибка соединения с сервером!');
+//                }
+//            }
 
             if ($getNumber == 3) {
                 $parsedResponse = explode(':', $result);
