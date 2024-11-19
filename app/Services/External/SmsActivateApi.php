@@ -34,7 +34,7 @@ class SmsActivateApi
     public function getTopCountriesByService($service = null, $freePrice = false)
     {
         $requestParam = array('api_key' => $this->apiKey, 'action' => __FUNCTION__, 'service' => $service, '$freePrice' => $freePrice);
-        return $this->request($requestParam, 'POST', true, 11);
+        return $this->request($requestParam, 'POST', true);
     }
 
     public function getNumbersStatus($country = null, $operator = null)
@@ -143,7 +143,7 @@ class SmsActivateApi
             $requestParam['service'] = $service;
         }
 
-        return $this->request($requestParam, 'GET', true, 11);
+        return $this->request($requestParam, 'GET', true);
     }
 
     public function getRentServicesAndCountries($country = "0", $time = 4, $operator = "any")
