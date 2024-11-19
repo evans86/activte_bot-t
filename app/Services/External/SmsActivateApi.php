@@ -257,7 +257,7 @@ class SmsActivateApi
         if ($method === 'GET') {
 
             if ($getNumber == 11) {
-                $result = file_get_contents("$this->url?$serializedData");
+//                $result = file_get_contents("$this->url?$serializedData");
                 try {
                     $result = $this->sendRequest($serializedData, 1);
                 } catch (\Throwable $e) {
