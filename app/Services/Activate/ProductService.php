@@ -30,22 +30,23 @@ class ProductService extends MainService
     {
         $smsActivate = new SmsActivateApi($bot->api_key, $bot->resource_link);
 
-        if ($bot->resource_link == BotService::DEFAULT_HOST) {
+//        if ($bot->resource_link == BotService::DEFAULT_HOST) {
 
             $services = \Cache::get('services_top_countries');
             if($services === null){
                 $services = $smsActivate->getTopCountriesByService();
+//                dd($services);
                 \Cache::put('services_top_countries', $services, 900);
             }
             return $this->formingPricesArr($services, $bot);
-        } else {
-            $services = \Cache::get('services_price');
-            if($services === null){
-                $services = $smsActivate->getPrices();
-                \Cache::put('services_price', $services, 900);
-            }
-            return $this->formingPricesArr($services, $bot);
-        }
+//        } else {
+//            $services = \Cache::get('services_price');
+//            if($services === null){
+//                $services = $smsActivate->getPrices();
+//                \Cache::put('services_price', $services, 900);
+//            }
+//            return $this->formingPricesArr($services, $bot);
+//        }
     }
 
     /**
@@ -59,8 +60,9 @@ class ProductService extends MainService
         if (!is_null($bot->black))
             $black_array = explode(',', $bot->black);
 
+//        dd($services);
         foreach ($services as $key => $service) {
-
+//            dd($service);
             if (!is_null($bot->black)) {
                 if (in_array($key, $black_array))
                     continue;
