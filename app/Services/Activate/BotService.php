@@ -9,7 +9,8 @@ use App\Services\MainService;
 
 class BotService extends MainService
 {
-    const DEFAULT_HOST = 'https://api.sms-activate.org/stubs/handler_api.php';
+//    const DEFAULT_HOST = 'https://api.sms-activate.org/stubs/handler_api.php';
+    const DEFAULT_HOST = 'https://api.sms-activate.ae/stubs/handler_api.php';
 
     /**
      * Создание модуля
