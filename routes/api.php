@@ -37,13 +37,13 @@ Route::resources([
  */
 Route::get('getCountries', [CountryController::class, 'getCountries']);
 Route::get('getServices', [ProductController::class, 'getServices']);
-Route::get('createMulti', [OrderController::class, 'createMulti']);
+Route::get('createMulti', [OrderController::class, 'createMulti'])->middleware('throttle_user_secret_key');
 
 /**
  * Роуты API (пользователи)
  */
-Route::get('setService', [ProductController::class, 'setService']);
-Route::get('setLanguage', [UserController::class, 'setLanguage']);
+Route::get('setService', [ProductController::class, 'setService'])->middleware('throttle_user_secret_key');
+Route::get('setLanguage', [UserController::class, 'setLanguage'])->middleware('throttle_user_secret_key');
 Route::get('getUser', [UserController::class, 'getUser']);
 
 /**
@@ -59,30 +59,30 @@ Route::get('getSettings', [BotController::class, 'getSettings']);
 /**
  * Роуты API (заказы (создание, получение, все))
  */
-Route::get('createOrder', [OrderController::class, 'createOrder']);
+Route::get('createOrder', [OrderController::class, 'createOrder'])->middleware('throttle_user_secret_key');
 Route::get('getOrder', [OrderController::class, 'getOrder']);
 Route::get('orders', [OrderController::class, 'orders']);
 
 /**
  * Роуты API (заказы (изменение статусов))
  */
-Route::get('closeOrder', [OrderController::class, 'closeOrder']);
-Route::get('secondSms', [OrderController::class, 'secondSms']);
-Route::get('confirmOrder', [OrderController::class, 'confirmOrder']);
+Route::get('closeOrder', [OrderController::class, 'closeOrder'])->middleware('throttle_user_secret_key');
+Route::get('secondSms', [OrderController::class, 'secondSms'])->middleware('throttle_user_secret_key');
+Route::get('confirmOrder', [OrderController::class, 'confirmOrder'])->middleware('throttle_user_secret_key');
 
 /**
  * Роуты API (аренда номеров))
  */
 Route::get('getRentCountries', [RentController::class, 'getRentCountries']);
 Route::get('getRentServices', [RentController::class, 'getRentServices']);
-Route::get('createRentOrder', [RentController::class, 'createRentOrder']);
-Route::get('getRentOrders', [RentController::class, 'getRentOrders']);
-Route::get('getRentOrder', [RentController::class, 'getRentOrder']);
-Route::get('closeRentOrder', [RentController::class, 'closeRentOrder']);
-Route::get('confirmRentOrder', [RentController::class, 'confirmRentOrder']);
-Route::get('getContinuePrice', [RentController::class, 'getContinuePrice']);
-Route::get('getTimePrice', [RentController::class, 'getTimePrice']);
-Route::get('continueRent', [RentController::class, 'continueRent']);
+Route::get('createRentOrder', [RentController::class, 'createRentOrder'])->middleware('throttle_user_secret_key');
+Route::get('getRentOrders', [RentController::class, 'getRentOrders'])->middleware('throttle_user_secret_key');
+Route::get('getRentOrder', [RentController::class, 'getRentOrder'])->middleware('throttle_user_secret_key');
+Route::get('closeRentOrder', [RentController::class, 'closeRentOrder'])->middleware('throttle_user_secret_key');
+Route::get('confirmRentOrder', [RentController::class, 'confirmRentOrder'])->middleware('throttle_user_secret_key');
+Route::get('getContinuePrice', [RentController::class, 'getContinuePrice'])->middleware('throttle_user_secret_key');
+Route::get('getTimePrice', [RentController::class, 'getTimePrice'])->middleware('throttle_user_secret_key');
+Route::get('continueRent', [RentController::class, 'continueRent'])->middleware('throttle_user_secret_key');
 Route::post('rent/updateSmsRent', [RentController::class, 'updateSmsRent'])->name('cashier.webhook'); //метод обновения кодов через вебхук
 
 

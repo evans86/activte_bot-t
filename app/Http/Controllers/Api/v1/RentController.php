@@ -255,7 +255,7 @@ class RentController extends Controller
             $user = SmsUser::query()->where(['telegram_id' => $request->user_id])->first();
             if (is_null($request->order_id))
                 return ApiHelpers::error('Not found params: order_id');
-            $order = RentOrder::query()->where(['org_id' => $request->order_id])->first();
+//            $order = RentOrder::query()->where(['org_id' => $request->order_id])->first();
             if (is_null($request->user_secret_key))
                 return ApiHelpers::error('Not found params: user_secret_key');
             if (is_null($request->public_key))
@@ -264,22 +264,24 @@ class RentController extends Controller
             if (empty($bot))
                 return ApiHelpers::error('Not found module.');
 
-            $botDto = BotFactory::fromEntity($bot);
-            $result = BottApi::checkUser(
-                $request->user_id,
-                $request->user_secret_key,
-                $botDto->public_key,
-                $botDto->private_key
-            );
-            if (!$result['result']) {
-                throw new RuntimeException($result['message']);
-            }
+            return \DB::transaction(function () use ($request, $bot) {
+                $botDto = BotFactory::fromEntity($bot);
+                $result = BottApi::checkUser(
+                    $request->user_id,
+                    $request->user_secret_key,
+                    $botDto->public_key,
+                    $botDto->private_key
+                );
+                if (!$result['result']) {
+                    throw new RuntimeException($result['message']);
+                }
+                $order = RentOrder::query()->where(['org_id' => $request->order_id])->lockForUpdate()->first();
+                $result = $this->rentService->cancel($botDto, $order, $result['data']);
 
-            $result = $this->rentService->cancel($botDto, $order, $result['data']);
+                $rent_order = RentOrder::query()->where(['org_id' => $request->order_id])->first();
 
-            $rent_order = RentOrder::query()->where(['org_id' => $request->order_id])->first();
-
-            return ApiHelpers::success(RentResource::generateRentArray($rent_order));
+                return ApiHelpers::success(RentResource::generateRentArray($rent_order));
+            });
         } catch (\RuntimeException $r) {
             BotLogHelpers::notifyBotLog('(🔴R ' . __FUNCTION__ . ' Activate): ' . $r->getMessage());
             return ApiHelpers::error($r->getMessage());
