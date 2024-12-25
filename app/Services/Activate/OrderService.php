@@ -263,8 +263,8 @@ class OrderService extends MainService
     public function updateStatusCancel($order_id): void
     {
         \DB::transaction(function () use ($order_id) {
-            $order = SmsOrder::lockForUpdate()->where(['org_id' => $order_id])->where(['status' => SmsOrder::STATUS_WAIT_CODE])->where(['status' => null])->first();
-            $order->status = SmsOrder::STATUS_CANCEL;
+            $order = SmsOrder::lockForUpdate()->where(['org_id' => $order_id])->where(['status' => SmsOrder::STATUS_WAIT_CODE])->first();
+            $order->status == SmsOrder::STATUS_CANCEL;
             $order->save();
         });
     }
