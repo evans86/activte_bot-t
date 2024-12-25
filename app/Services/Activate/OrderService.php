@@ -262,11 +262,11 @@ class OrderService extends MainService
      */
     public function updateStatusCancel($order_id): void
     {
-//        \DB::transaction(function () use ($order_id) {
+        \DB::transaction(function () use ($order_id) {
             $order = SmsOrder::lockForUpdate()->where(['org_id' => $order_id])->where(['status' => SmsOrder::STATUS_WAIT_CODE])->first();
             $order->status = SmsOrder::STATUS_CANCEL;
             $order->save();
-//        });
+        });
     }
 
     /**
@@ -384,7 +384,7 @@ class OrderService extends MainService
                         }
                         break;
                     default:
-                        throw new RuntimeException('неизвестный статус: ' . $order->id);
+                        throw new RuntimeException('Nеизвестный статус: ' . $resultStatus . $order->id);
                 }
         }
     }
@@ -433,8 +433,6 @@ class OrderService extends MainService
                 );
                 echo $order->id . PHP_EOL;
 
-
-
                 if (is_null($order->codes)) {
                     echo 'cancel_start' . PHP_EOL;
                     $this->updateStatusCancel($order->org_id);
@@ -461,7 +459,7 @@ class OrderService extends MainService
             $finish_text = "Activate finish count: " . count($orders) . PHP_EOL;
             $this->notifyTelegram($finish_text);
 
-        }catch (Exception $e){
+        } catch (Exception $e) {
             $this->notifyTelegram('🔴' . $e->getMessage());
         }
     }
