@@ -16,6 +16,7 @@ class RequestError extends \RuntimeException
     }
 
     protected $errorCodes = array(
+        'ACCESS_READY ' => 'Сервис успешно активирован',
         'ACCESS_ACTIVATION' => 'Сервис успешно активирован',
         'ACCESS_CANCEL' => 'активация отменена',
         'ACCESS_READY' => 'Ожидание нового смс',
@@ -45,7 +46,10 @@ class RequestError extends \RuntimeException
         'INVALID_PHONE' => 'Номер арендован не вами (неправильный id аренды)',
         'INCORECT_STATUS' => 'Отсутствует или неправильно указан статус',
         'WRONG_SERVICE' => 'Сервис не поддерживает переадресацию',
-        'WRONG_SECURITY' => 'Ошибка при попытке передать ID активации без переадресации, или же завершенной/не активной активации'
+        'WRONG_SECURITY' => 'Ошибка при попытке передать ID активации без переадресации, или же завершенной/не активной активации',
+        'ACCESS_RETRY_GET ' => 'ожидание нового смс',
+        'EARLY_CANCEL_DENIED' => 'нельзя отменить номер в первые 2 минуты',
+        'WRONG_ACTIVATION_ID' => 'неверный ID или ID не является числом'
     );
 
     public function getResponseCode()
