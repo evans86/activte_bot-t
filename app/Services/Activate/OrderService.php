@@ -349,8 +349,8 @@ class OrderService extends MainService
             case SmsOrder::STATUS_WAIT_CODE:
             case SmsOrder::STATUS_WAIT_RETRY:
                 $resultStatus = $this->getStatus($order->org_id, $botDto);
-                if ($resultStatus == null)
-                    $this->notifyTelegram('Что здесь пришло хуй' . $resultStatus);
+//                if ($resultStatus == null)
+//                    $this->notifyTelegram('Что здесь пришло хз' . $resultStatus);
                 switch ($resultStatus) {
                     case SmsOrder::STATUS_FINISH:
                     case SmsOrder::STATUS_CANCEL:
@@ -358,6 +358,7 @@ class OrderService extends MainService
                     case SmsOrder::STATUS_OK:
                     case SmsOrder::STATUS_WAIT_CODE:
                     case SmsOrder::STATUS_WAIT_RETRY:
+                    case null:
                         $smsActivate = new SmsActivateApi($botDto->api_key, $botDto->resource_link);
                         $activateActiveOrders = $smsActivate->getActiveActivations();
                         if (key_exists('activeActivations', $activateActiveOrders)) {
