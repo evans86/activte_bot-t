@@ -349,6 +349,7 @@ class OrderService extends MainService
             case SmsOrder::STATUS_WAIT_CODE:
             case SmsOrder::STATUS_WAIT_RETRY:
                 $resultStatus = $this->getStatus($order->org_id, $botDto);
+                echo $resultStatus . PHP_EOL;
                 switch ($resultStatus) {
                     case SmsOrder::STATUS_FINISH:
                     case SmsOrder::STATUS_CANCEL:
@@ -510,7 +511,6 @@ class OrderService extends MainService
     {
         $smsActivate = new SmsActivateApi($botDto->api_key, $botDto->resource_link);
 
-        $serviceResult = $smsActivate->getStatus($id);
-        return $serviceResult;
+        return $smsActivate->getStatus($id);
     }
 }
