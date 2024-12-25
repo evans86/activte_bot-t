@@ -349,7 +349,7 @@ class OrderService extends MainService
             case SmsOrder::STATUS_WAIT_CODE:
             case SmsOrder::STATUS_WAIT_RETRY:
                 $resultStatus = $this->getStatus($order->org_id, $botDto);
-                if ($order->id == null)
+                if ($resultStatus == null)
                     $this->notifyTelegram('Что здесь пришло хуй' . $resultStatus);
                 switch ($resultStatus) {
                     case SmsOrder::STATUS_FINISH:
