@@ -358,7 +358,7 @@ class OrderService extends MainService
                     case SmsOrder::STATUS_OK:
                     case SmsOrder::STATUS_WAIT_CODE:
                     case SmsOrder::STATUS_WAIT_RETRY:
-                    case null:
+//                    case null:
                         $smsActivate = new SmsActivateApi($botDto->api_key, $botDto->resource_link);
                         $activateActiveOrders = $smsActivate->getActiveActivations();
                         if (key_exists('activeActivations', $activateActiveOrders)) {
@@ -387,7 +387,7 @@ class OrderService extends MainService
                         }
                         break;
                     default:
-                        throw new RuntimeException('Nеизвестный статус Вот этот: ' . $resultStatus . $order->id);
+                        throw new RuntimeException('Nеизвестный статус этот: ' . $resultStatus . $order->id);
                 }
         }
     }
