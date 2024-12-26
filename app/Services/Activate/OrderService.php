@@ -351,11 +351,11 @@ class OrderService extends MainService
             case SmsOrder::STATUS_WAIT_RETRY:
                 $resultStatus = $this->getStatus($order->org_id, $botDto);
                 switch ($resultStatus) {
-                    case null:
-                        throw new RuntimeException('ЭТО НАЛЛЛЛ');
+//                    case null:
+//                        throw new RuntimeException('ЭТО NULL');
                     case OrdersHelper::requestArray('BAD_KEY'):
                     case OrdersHelper::requestArray('WRONG_ACTIVATION_ID'):
-                        $this->notifyTelegram('BAD_KEY');
+                        $this->notifyTelegram('BAD_KEY' . $order->id);
                         if (is_null($order->codes))
                             $order->status = SmsOrder::STATUS_CANCEL;
                         else
@@ -396,7 +396,8 @@ class OrderService extends MainService
                         }
                         break;
                     default:
-                        throw new RuntimeException('Nеизвестный статус: ' . $order->id . $resultStatus);
+//                        throw new RuntimeException('Nеизвестный статус: ' . $order->id . $resultStatus);
+                        throw new RuntimeException('Неизвестный статус: ' . $order->id);
                 }
         }
     }
