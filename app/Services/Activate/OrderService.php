@@ -351,6 +351,8 @@ class OrderService extends MainService
             case SmsOrder::STATUS_WAIT_RETRY:
                 $resultStatus = $this->getStatus($order->org_id, $botDto);
                 switch ($resultStatus) {
+                    case null:
+                        throw new RuntimeException('ЭТО НАЛЛЛЛ');
                     case OrdersHelper::requestArray('BAD_KEY'):
                         $this->notifyTelegram('BAD_KEY');
                         if (is_null($order->codes))
