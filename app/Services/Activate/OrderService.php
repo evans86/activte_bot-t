@@ -393,7 +393,7 @@ class OrderService extends MainService
                         }
                         break;
                     default:
-                        throw new RuntimeException('неизвестный статус: ' . $order->id . $resultStatus);
+                        throw new RuntimeException('Nеизвестный статус: ' . $order->id . $resultStatus);
                 }
         }
     }
