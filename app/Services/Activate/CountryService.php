@@ -60,22 +60,22 @@ class CountryService extends MainService
 
         if($bot->retail){
 
-//            $countries = \Cache::get('countries_' . $service);
-//            if($countries === null){
+            $countries = \Cache::get('countries_' . $service);
+            if($countries === null){
                 $countries = $smsActivate->getPrices(null, $service);
 //                dd($countries);
-//                \Cache::put('countries_' . $service, $countries, 15);
-//            }
+                \Cache::put('countries_' . $service, $countries, 15);
+            }
 
             return $this->formingRetailServices($countries, $service, $bot);
         }else{
 
-//            $countries = \Cache::get('countries_retail_' . $service);
-//            if($countries === null){
+            $countries = \Cache::get('countries_retail_' . $service);
+            if($countries === null){
                 $countries = $smsActivate->getTopCountriesByService($service);
 //            dd($countries);
-//                \Cache::put('countries_retail_' . $service, $countries, 15);
-//            }
+                \Cache::put('countries_retail_' . $service, $countries, 15);
+            }
             return $this->formingServicesArr($countries, $bot);
         }
     }
