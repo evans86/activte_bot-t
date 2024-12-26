@@ -287,7 +287,7 @@ class OrderService extends MainService
         if (is_null($order->codes))
             throw new RuntimeException('Попытка установить несуществующий статус');
         if ($order->status == SmsOrder::STATUS_FINISH)
-            throw new RuntimeException('The order has not been canceled, the number has been activated, Status 10');
+            throw new RuntimeException('The order has not been canceled, the number has been activated, Status 10 ' . $order->id);
 
         $result = $smsActivate->setStatus($order->org_id, SmsOrder::ACCESS_ACTIVATION);
 
