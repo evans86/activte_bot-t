@@ -264,7 +264,7 @@ class OrderService extends MainService
     {
         \DB::transaction(function () use ($order_id) {
             $order = SmsOrder::lockForUpdate()->where(['org_id' => $order_id])->where(['status' => SmsOrder::STATUS_WAIT_CODE])->first();
-            $order->status == SmsOrder::STATUS_CANCEL;
+            $order->status = SmsOrder::STATUS_CANCEL;
             $order->save();
         });
     }
