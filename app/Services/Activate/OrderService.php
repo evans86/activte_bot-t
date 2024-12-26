@@ -349,8 +349,6 @@ class OrderService extends MainService
             case SmsOrder::STATUS_WAIT_CODE:
             case SmsOrder::STATUS_WAIT_RETRY:
                 $resultStatus = $this->getStatus($order->org_id, $botDto);
-//                if ($resultStatus == null)
-//                    $this->notifyTelegram('Что здесь пришло хз' . $resultStatus);
                 switch ($resultStatus) {
                     case SmsOrder::STATUS_FINISH:
                     case SmsOrder::STATUS_CANCEL:
@@ -358,7 +356,6 @@ class OrderService extends MainService
                     case SmsOrder::STATUS_OK:
                     case SmsOrder::STATUS_WAIT_CODE:
                     case SmsOrder::STATUS_WAIT_RETRY:
-//                    case null:
                         $smsActivate = new SmsActivateApi($botDto->api_key, $botDto->resource_link);
                         $activateActiveOrders = $smsActivate->getActiveActivations();
                         if (key_exists('activeActivations', $activateActiveOrders)) {
@@ -387,7 +384,7 @@ class OrderService extends MainService
                         }
                         break;
                     default:
-                        throw new RuntimeException('Nеизвестный статус этот: ' . $resultStatus . $order->id);
+                        throw new RuntimeException('неизвестный статус: ' . $order->id);
                 }
         }
     }
@@ -436,6 +433,8 @@ class OrderService extends MainService
                 );
                 echo $order->id . PHP_EOL;
 
+
+
                 if (is_null($order->codes)) {
                     echo 'cancel_start' . PHP_EOL;
                     $this->updateStatusCancel($order->org_id);
@@ -462,7 +461,7 @@ class OrderService extends MainService
             $finish_text = "Activate finish count: " . count($orders) . PHP_EOL;
             $this->notifyTelegram($finish_text);
 
-        } catch (Exception $e) {
+        }catch (Exception $e){
             $this->notifyTelegram('🔴' . $e->getMessage());
         }
     }
@@ -513,6 +512,7 @@ class OrderService extends MainService
     {
         $smsActivate = new SmsActivateApi($botDto->api_key, $botDto->resource_link);
 
-        return $smsActivate->getStatus($id);
+        $serviceResult = $smsActivate->getStatus($id);
+        return $serviceResult;
     }
 }
