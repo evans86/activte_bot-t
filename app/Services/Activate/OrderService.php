@@ -352,7 +352,12 @@ class OrderService extends MainService
                 $resultStatus = $this->getStatus($order->org_id, $botDto);
                 switch ($resultStatus) {
                     case OrdersHelper::requestArray('BAD_KEY'):
-                        throw new RuntimeException('ВОТ ОШИБКА, API KEY НЕ ПРАВИЛЬНЫЙ');
+                        if (is_null($order->codes))
+                            $order->status = SmsOrder::STATUS_CANCEL;
+                        else
+                            $order->status = SmsOrder::STATUS_FINISH;
+                        $order->save();
+                        break;
                     case SmsOrder::STATUS_FINISH:
                     case SmsOrder::STATUS_CANCEL:
                         break;
@@ -437,7 +442,6 @@ class OrderService extends MainService
                 echo $order->id . PHP_EOL;
 
 
-
                 if (is_null($order->codes)) {
                     echo 'cancel_start' . PHP_EOL;
                     $this->updateStatusCancel($order->org_id);
@@ -464,7 +468,7 @@ class OrderService extends MainService
             $finish_text = "Activate finish count: " . count($orders) . PHP_EOL;
             $this->notifyTelegram($finish_text);
 
-        }catch (Exception $e){
+        } catch (Exception $e) {
             $this->notifyTelegram('🔴' . $e->getMessage());
         }
     }
