@@ -4,6 +4,7 @@ namespace App\Services\Activate;
 
 use App\Dto\BotDto;
 use App\Dto\BotFactory;
+use App\Helpers\OrdersHelper;
 use App\Models\Activate\SmsCountry;
 use App\Models\Bot\SmsBot;
 use App\Models\Order\SmsOrder;
@@ -350,6 +351,8 @@ class OrderService extends MainService
             case SmsOrder::STATUS_WAIT_RETRY:
                 $resultStatus = $this->getStatus($order->org_id, $botDto);
                 switch ($resultStatus) {
+                    case OrdersHelper::requestArray('BAD_KEY'):
+                        throw new RuntimeException('ВОТ ОШИБКА, API KEY НЕ ПРАВИЛЬНЫЙ');
                     case SmsOrder::STATUS_FINISH:
                     case SmsOrder::STATUS_CANCEL:
                         break;
