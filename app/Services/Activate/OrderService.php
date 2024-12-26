@@ -354,6 +354,7 @@ class OrderService extends MainService
                     case null:
                         throw new RuntimeException('ЭТО НАЛЛЛЛ');
                     case OrdersHelper::requestArray('BAD_KEY'):
+                    case OrdersHelper::requestArray('WRONG_ACTIVATION_ID'):
                         $this->notifyTelegram('BAD_KEY');
                         if (is_null($order->codes))
                             $order->status = SmsOrder::STATUS_CANCEL;
