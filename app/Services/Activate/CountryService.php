@@ -2,6 +2,7 @@
 
 namespace App\Services\Activate;
 
+use App\Helpers\BotLogHelpers;
 use App\Models\Activate\SmsCountry;
 use App\Services\External\SmsActivateApi;
 use App\Services\MainService;
@@ -27,7 +28,7 @@ class CountryService extends MainService
         $smsActivate = new SmsActivateApi($bot->api_key, $bot->resource_link);
 
         $countries = \Cache::get('countries_multi');
-        if($countries === null){
+        if ($countries === null) {
             $countries = $smsActivate->getCountries();
             \Cache::put('countries_multi', $countries, 900);
         }
@@ -58,20 +59,20 @@ class CountryService extends MainService
     {
         $smsActivate = new SmsActivateApi($bot->api_key, $bot->resource_link);
 
-        if($bot->retail){
+        if ($bot->retail) {
 
             $countries = \Cache::get('countries_' . $service);
-            if($countries === null){
+            if ($countries === null) {
                 $countries = $smsActivate->getPrices(null, $service);
 //                dd($countries);
                 \Cache::put('countries_' . $service, $countries, 15);
             }
 
             return $this->formingRetailServices($countries, $service, $bot);
-        }else{
+        } else {
 
             $countries = \Cache::get('countries_retail_' . $service);
-            if($countries === null){
+            if ($countries === null) {
                 $countries = $smsActivate->getTopCountriesByService($service);
 //            dd($countries);
                 \Cache::put('countries_retail_' . $service, $countries, 15);
@@ -149,29 +150,37 @@ class CountryService extends MainService
      */
     private function formingServicesArr($countries, $bot)
     {
-        $result = [];
-        foreach ($countries as $key => $country) {
+        try {
+            $result = [];
+//        dd($bot);
+            foreach ($countries as $key => $country) {
 
-            $smsCountry = SmsCountry::query()->where(['org_id' => $country['country']])->first();
-
+                $smsCountry = SmsCountry::query()->where(['org_id' => $country['country']])->first();
+//            dd($smsCountry);
 //            $country = current($country);
-            $price = $country["retail_price"];
+                $price = $country["retail_price"];
 
 //            dd($price);
 
-            $pricePercent = $price + ($price * ($bot->percent / 100));
-
-            array_push($result, [
-                'id' => $smsCountry->org_id,
-                'title_ru' => $smsCountry->name_ru,
-                'title_eng' => $smsCountry->name_en,
-                'image' => $smsCountry->image,
-                'count' => $country["count"],
-                'cost' => $pricePercent * 100,
-            ]);
-        }
+                $pricePercent = $price + ($price * ($bot->percent / 100));
+//dd($pricePercent);
+                array_push($result, [
+                    'id' => $smsCountry->org_id,
+                    'title_ru' => $smsCountry->name_ru,
+                    'title_eng' => $smsCountry->name_en,
+                    'image' => $smsCountry->image,
+                    'count' => $country["count"],
+                    'cost' => $pricePercent * 100,
+                ]);
+            }
 
 //        dd($result);
-        return $result;
+            return $result;
+        } catch (\Exception $e) {
+//            dd($country);
+            BotLogHelpers::notifyBotLog('(🔴E ' . __FUNCTION__ . ' Activate): ' . $country . $e->getMessage());
+            return $result;
+        }
+
     }
 }
