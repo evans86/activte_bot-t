@@ -212,13 +212,13 @@ class SmsActivateApi
             throw new RuntimeException('Превышен лимит подключений!');
         try {
             $client = new Client(['base_uri' => $this->url]);
-            if ($method === 'GET'){
+            if ($method === 'GET') {
                 $response = $client->get('?' . $data,
                     [
                         'proxy' => 'http://VtZNR9Hb:nXC9nQ45@45.147.246.121:64614',
                     ]
                 );
-            }else{
+            } else {
                 $response = $client->post('?' . $data,
                     [
                         $context,
@@ -251,13 +251,21 @@ class SmsActivateApi
             throw new InvalidArgumentException('Method can only be GET or POST');
         }
 
+        $context = stream_context_create(
+            array(
+                "http" => array(
+                    "header" => "User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36"
+                )
+            )
+        );
+
         $serializedData = http_build_query($data);
         $serializedData = str_replace('&amp;', '&', $serializedData);
 
         if ($method === 'GET') {
 
             if ($getNumber == 11) {
-                $result = file_get_contents("$this->url?$serializedData");
+                $result = file_get_contents("$this->url?$serializedData", false, $context);
 //                try {
 //                    $result = $this->sendRequest($serializedData, 1);
 //                } catch (\Throwable $e) {
@@ -271,7 +279,7 @@ class SmsActivateApi
                 return $result;
             }
 
-            $result = file_get_contents("$this->url?$serializedData");
+            $result = file_get_contents("$this->url?$serializedData", false, $context);
 
 //            try {
 //                $result = $this->sendRequest($serializedData, 1);
@@ -366,9 +374,17 @@ class SmsActivateApi
         }
         $serializedData = http_build_query($data);
 
+        $context = stream_context_create(
+            array(
+                "http" => array(
+                    "header" => "User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36"
+                )
+            )
+        );
+
         if ($method === 'GET') {
             $request_url = "$this->url?$serializedData";
-            $result = file_get_contents($request_url);
+            $result = file_get_contents($request_url, false, $context);
 //            try {
 //                $result = $this->sendRequest($serializedData, 1);
 //            } catch (\Throwable $e) {
