@@ -101,6 +101,7 @@ class ProductService extends MainService
      */
     public function getServices($bot, $country = null)
     {
+        $apiRate = ProductService::formingRublePrice();
         $smsActivate = new SmsActivateApi($bot->api_key, $bot->resource_link);
 
         $services = \Cache::get('services_multi_' . $country);
@@ -123,6 +124,7 @@ class ProductService extends MainService
             }
 
             $price = $service["cost"];
+            $price = round(($apiRate * $price), 2);
             $pricePercent = $price + ($price * ($bot->percent / 100));
 
             array_push($result, [
