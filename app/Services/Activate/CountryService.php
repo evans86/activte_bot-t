@@ -111,6 +111,7 @@ class CountryService extends MainService
      */
     public function formingRetailServices($countries, $service, $bot)
     {
+        $apiRate = ProductService::formingRublePrice();
         $result = [];
 //        dd($countries);
         foreach ($countries as $key => $country) {
@@ -122,6 +123,7 @@ class CountryService extends MainService
 //            dd($smsCountry->org_id);
 
             $price = $country[$service]["cost"];
+            $price = round(($apiRate * $price), 2);
 //            dd($price);
 
             $pricePercent = $price + ($price * ($bot->percent / 100));
@@ -151,6 +153,7 @@ class CountryService extends MainService
     private function formingServicesArr($countries, $bot)
     {
         try {
+            $apiRate = ProductService::formingRublePrice();
             $result = [];
 //        dd($bot);
             foreach ($countries as $key => $country) {
@@ -159,6 +162,7 @@ class CountryService extends MainService
 //            dd($smsCountry);
 //            $country = current($country);
                 $price = $country["retail_price"];
+                $price = round(($apiRate * $price), 2);
 
 //            dd($price);
 

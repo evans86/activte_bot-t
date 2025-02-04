@@ -21,6 +21,21 @@ class ProductService extends MainService
         return $smsActivate->getNumbersStatus($country);
     }
 
+    public static function formingRublePrice(): float
+    {
+        $url = 'https://www.cbr.ru/scripts/XML_daily.asp';
+        $xml = simplexml_load_file($url);
+        $json = json_encode($xml);
+        $currencies = json_decode($json, TRUE);
+        $apiRate = '';
+        foreach ($currencies['Valute'] as $key => $currency) {
+            if ($currency['CharCode'] == 'USD')
+                $apiRate = $currency['Value'];
+        }
+        $apiRate = str_replace(",", ".", $apiRate);
+        return $apiRate;
+    }
+
     /**
      * Сервисы доступные для конкретной страны
      *
