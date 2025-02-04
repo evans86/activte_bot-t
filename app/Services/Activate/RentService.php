@@ -135,6 +135,7 @@ class RentService extends MainService
      */
     public function getRentService(BotDto $botDto, $country)
     {
+        $apiRate = ProductService::formingRublePrice();
         $smsActivate = new SmsActivateApi($botDto->api_key, $botDto->resource_link);
 
         $resultRequest = \Cache::get('services_rent_' . $country);
@@ -157,6 +158,7 @@ class RentService extends MainService
             }
 
             $amountStart = intval(floatval($service['retail_cost']) * 100);
+            $amountStart = round(($apiRate * $amountStart), 2);
             $amountFinal = $amountStart + ($amountStart * ($botDto->percent / 100));
 
             array_push($result, [
