@@ -233,6 +233,7 @@ class RentService extends MainService
      */
     public function create(BotDto $botDto, $service, $country, $time, array $userData, $url = 'https://activate.bot-t.com/rent/updateSmsRent')
     {
+        $apiRate = ProductService::formingRublePrice();
         $smsActivate = new SmsActivateApi($botDto->api_key, $botDto->resource_link);
 
         $user = SmsUser::query()->where(['telegram_id' => $userData['user']['telegram_id']])->first();
@@ -243,6 +244,7 @@ class RentService extends MainService
         $country = SmsCountry::query()->where(['org_id' => $country])->first();
         $orderAmount = $this->getPriceService($botDto, $country->org_id, $service, $time);
         $amountStart = intval(floatval($orderAmount) * 100);
+        $amountStart = round(($apiRate * $amountStart), 2);
         $amountFinal = $amountStart + ($amountStart * ($botDto->percent / 100));
 
         //проверка баланса пользователя
@@ -375,12 +377,14 @@ class RentService extends MainService
      */
     public function priceContinue(BotDto $botDto, RentOrder $rent_order, $time)
     {
+        $apiRate = ProductService::formingRublePrice();
         $smsActivate = new SmsActivateApi($botDto->api_key, $botDto->resource_link);
 
         $resultRequest = $smsActivate->getContinueRentPriceNumber($rent_order->org_id, $time);
         $requestAmount = $resultRequest['price'];
 
         $amountStart = intval(floatval($requestAmount) * 100);
+        $amountStart = round(($apiRate * $amountStart), 2);
         $amountFinal = $amountStart + ($amountStart * ($botDto->percent / 100));
 
         return $amountFinal;

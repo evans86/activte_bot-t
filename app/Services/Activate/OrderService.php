@@ -148,6 +148,7 @@ class OrderService extends MainService
     public
     function create(array $userData, BotDto $botDto, string $country_id): array
     {
+        $apiRate = ProductService::formingRublePrice();
         // Создать заказ по апи
         $smsActivate = new SmsActivateApi($botDto->api_key, $botDto->resource_link);
         $user = SmsUser::query()->where(['telegram_id' => $userData['user']['telegram_id']])->first();
@@ -164,7 +165,9 @@ class OrderService extends MainService
         $org_id = intval($serviceResult['activationId']);
         // Из него получить цену
         $amountStart = intval(floatval($serviceResult['activationCost']) * 100);
+        $amountStart = round(($apiRate * $amountStart), 2);
         $amountFinal = $amountStart + $amountStart * $botDto->percent / 100;
+
         if ($amountFinal > $userData['money']) {
             $serviceResult = $smsActivate->setStatus($org_id, SmsOrder::ACCESS_CANCEL);
             throw new RuntimeException('Пополните баланс в боте');
