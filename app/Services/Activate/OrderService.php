@@ -29,6 +29,7 @@ class OrderService extends MainService
      */
     public function createMulti(BotDto $botDto, string $country_id, string $services, array $userData)
     {
+        $apiRate = ProductService::formingRublePrice();
         // Создать заказ по апи
         $smsActivate = new SmsActivateApi($botDto->api_key, $botDto->resource_link);
 
@@ -55,6 +56,7 @@ class OrderService extends MainService
 
         //формирование общей цены заказа
         $amountFinal = intval(floatval($orderAmount) * 100);
+        $amountFinal = round(($apiRate * $amountFinal), 2);
         $amountFinal = $amountFinal + ($amountFinal * ($botDto->percent / 100));
 
         //отмена заказа если бабок недостаточно
@@ -93,6 +95,7 @@ class OrderService extends MainService
                 if ($org_id == $active_org_id) {
                     //формирование цены для каждого заказа
                     $amountStart = intval(floatval($activateActiveOrder['activationCost']) * 100);
+                    $amountStart = round(($apiRate * $amountStart), 2);
                     $amountFinal = $amountStart + $amountStart * ($botDto->percent / 100);
 
                     $data = [
