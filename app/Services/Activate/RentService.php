@@ -183,6 +183,7 @@ class RentService extends MainService
     public function getPriceService(BotDto $botDto, $country, $service, $time)
     {
         $smsActivate = new SmsActivateApi($botDto->api_key, $botDto->resource_link);
+        $apiRate = ProductService::formingRublePrice();
 
         $resultRequest = $smsActivate->getRentServicesAndCountries($country, $time);
 
@@ -191,6 +192,7 @@ class RentService extends MainService
 
         $service = $resultRequest['services'][$service];
         $service_price = $service['retail_cost'];
+        $service_price = round(($apiRate * $service_price), 2);
 
         return $service_price;
     }
@@ -205,6 +207,7 @@ class RentService extends MainService
     public function getTimePrice(BotDto $botDto, $country, $service, $time)
     {
         $smsActivate = new SmsActivateApi($botDto->api_key, $botDto->resource_link);
+        $apiRate = ProductService::formingRublePrice();
 
         $resultRequest = $smsActivate->getRentServicesAndCountries($country, $time);
 
@@ -215,6 +218,7 @@ class RentService extends MainService
         $service_price = $service['retail_cost'];
 
         $amountStart = intval(floatval($service_price) * 100);
+        $amountStart = round(($apiRate * $amountStart), 2);
         $amountFinal = $amountStart + ($amountStart * ($botDto->percent / 100));
 
         return $amountFinal;
