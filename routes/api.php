@@ -81,7 +81,7 @@ Route::get('getRentOrder', [RentController::class, 'getRentOrder'])->middleware(
 Route::get('closeRentOrder', [RentController::class, 'closeRentOrder'])->middleware('throttle_user_secret_key');
 Route::get('confirmRentOrder', [RentController::class, 'confirmRentOrder'])->middleware('throttle_user_secret_key');
 Route::get('getContinuePrice', [RentController::class, 'getContinuePrice'])->middleware('throttle_user_secret_key');
-Route::get('getTimePrice', [RentController::class, 'getTimePrice'])->middleware('throttle_user_secret_key');
+Route::get('getTimePrice', [RentController::class, 'getTimePrice']);
 Route::get('continueRent', [RentController::class, 'continueRent'])->middleware('throttle_user_secret_key');
 Route::post('rent/updateSmsRent', [RentController::class, 'updateSmsRent'])->name('cashier.webhook'); //метод обновения кодов через вебхук
 
