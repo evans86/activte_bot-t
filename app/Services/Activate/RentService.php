@@ -4,6 +4,7 @@ namespace App\Services\Activate;
 
 use App\Dto\BotDto;
 use App\Dto\BotFactory;
+use App\Helpers\BotLogHelpers;
 use App\Models\Activate\SmsCountry;
 use App\Models\Bot\SmsBot;
 use App\Models\Order\SmsOrder;
@@ -250,6 +251,8 @@ class RentService extends MainService
         $amountStart = intval(floatval($orderAmount) * 100);
         $amountStart = round(($apiRate * $amountStart), 2);
         $amountFinal = $amountStart + ($amountStart * ($botDto->percent / 100));
+
+        BotLogHelpers::notifyBotLog('(🔴R ' . __FUNCTION__ . ' Activate DEBUG: $amountFinal: ' . $amountFinal . ' $amountStart: ' . $amountStart . ' $orderAmount: ' . $orderAmount . ' $apiRate: ' . $apiRate . ' USER MONEY: ' . $userData['money']);
 
         //проверка баланса пользователя
         if ($amountFinal > $userData['money']) {
