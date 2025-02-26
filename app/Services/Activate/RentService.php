@@ -247,10 +247,12 @@ class RentService extends MainService
         }
 
         $country = SmsCountry::query()->where(['org_id' => $country])->first();
-        $orderAmount = $this->getPriceService($botDto, $country->org_id, $service, $time);
-        $amountStart = intval(floatval($orderAmount) * 100);
-        $amountStart = round(($apiRate * $amountStart), 2);
-        $amountFinal = $amountStart + ($amountStart * ($botDto->percent / 100));
+        $orderAmount = $this->getPriceService($botDto, $country->org_id, $service, $time); // 21.48
+        $amountStart = intval(floatval($orderAmount) * 100); //
+//        $amountStart = round(($apiRate * $amountStart), 2); // 184573.13
+        $amountFinal = $amountStart + ($amountStart * ($botDto->percent / 100)); // 239945.069
+        // API RATE 85.9279
+        // USER MONEY 100100
 
         BotLogHelpers::notifyBotLog('(🔴R ' . __FUNCTION__ . ' Activate DEBUG: $amountFinal: ' . $amountFinal . ' $amountStart: ' . $amountStart . ' $orderAmount: ' . $orderAmount . ' $apiRate: ' . $apiRate . ' USER MONEY: ' . $userData['money']);
 
