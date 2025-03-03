@@ -335,7 +335,7 @@ class RentService extends MainService
         if ($rent_order->save()) {
             // Он же возвращает баланс
             $amountFinal = $rent_order->price_final;
-            $result = BottApi::addBalance($botDto, $userData, $amountFinal, 'Возврат баланса, аренда отменена');
+            $result = BottApi::addBalance($botDto, $userData, $amountFinal, 'Возврат баланса, аренда отменена rent_order_id: ' . $rent_order->id);
         } else {
             throw new RuntimeException('Not save order');
         }

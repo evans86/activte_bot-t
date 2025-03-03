@@ -234,7 +234,7 @@ class RentController extends Controller
         } catch (\RuntimeException $r) {
             BotLogHelpers::notifyBotLog('(🔴R ' . __FUNCTION__ . ' Activate): ' . $r->getMessage());
             return ApiHelpers::error($r->getMessage());
-        } catch (RuntimeException $e) {
+        } catch (Exception $e) {
             BotLogHelpers::notifyBotLog('(🔴E ' . __FUNCTION__ . ' Activate): ' . $e->getMessage());
             \Log::error($e->getMessage());
             return ApiHelpers::error('Get rent order error');
