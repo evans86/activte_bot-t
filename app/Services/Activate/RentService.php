@@ -15,6 +15,7 @@ use App\Services\External\SmsActivateApi;
 use App\Services\MainService;
 use GuzzleHttp\Client;
 use GuzzleHttp\RequestOptions;
+use Log;
 use RuntimeException;
 use Exception;
 
@@ -265,7 +266,7 @@ class RentService extends MainService
         $end_time = strtotime($resultRequest['phone']['endDate']);
 
         // Попытаться списать баланс у пользователя
-        $result = BottApi::subtractBalance($botDto, $userData, $amountFinal, 'Списание баланса для аренды номера.');
+        $result = BottApi::subtractBalance($botDto, $userData, $amountFinal, 'Списание баланса для аренды номера ' . $resultRequest['phone']['number']);
 
         // Неудача
         if (!$result['result']) {
@@ -291,6 +292,7 @@ class RentService extends MainService
         ];
 
         $rent_order = RentOrder::create($data);
+        Log::info('Activate: Произошло создание заказа на аренду (списание баланса) ' . $rent_order->id);
 
         $responseData = [
             'id' => $rent_order->org_id,
@@ -335,9 +337,11 @@ class RentService extends MainService
         if ($rent_order->save()) {
             // Он же возвращает баланс
             $amountFinal = $rent_order->price_final;
+            BotLogHelpers::notifyBotLog('(🔴SUB ' . __FUNCTION__ . ' Vak): ' . 'Вернул баланс за аренду order_id = ' . $rent_order->id);
             $result = BottApi::addBalance($botDto, $userData, $amountFinal, 'Возврат баланса, аренда отменена rent_order_id: ' . $rent_order->id);
+            Log::info('Activate: Произошла отмена заказа (возврат баланса) ' . $rent_order->id);
         } else {
-            throw new RuntimeException('Not save order');
+            throw new RuntimeException('Not save rent order');
         }
 
         return $result;
@@ -369,6 +373,7 @@ class RentService extends MainService
         if ($rent_order->save()) {
             BottApi::createOrder($botDto, $userData, $rent_order->price_final,
                 'Заказ аренды для номера ' . $rent_order->phone);
+            Log::info('Activate: Произошло успешное завершение заказа ' . $rent_order->id);
         } else {
             throw new RuntimeException('Not save order');
         }
@@ -425,7 +430,7 @@ class RentService extends MainService
         }
 
         // Попытаться списать баланс у пользователя
-        $result = BottApi::subtractBalance($botDto, $userData, $amountFinal, 'Списание баланса для продления аренды номера.');
+        $result = BottApi::subtractBalance($botDto, $userData, $amountFinal, 'Списание баланса для продления аренды номера ' . $rent_order->phone);
 
         // Неудача отмена - заказа
         if (!$result['result']) {
@@ -438,6 +443,7 @@ class RentService extends MainService
         $rent_order->end_time = $end_time;
 
         $rent_order->save();
+        Log::info('Activate: Произошло продление заказа на аренду (списание баланса) ' . $rent_order->id);
     }
 
     /**
@@ -476,8 +482,12 @@ class RentService extends MainService
         try {
             $statuses = [RentOrder::STATUS_WAIT_CODE];
 
-            $rent_orders = RentOrder::query()->whereIn('status', $statuses)
-                ->where('end_time', '<=', time())->get();
+            $rent_orders = RentOrder::query()
+                ->whereIn('status', $statuses)
+                ->where('end_time', '<=', time())
+                ->where('status', '!=', RentOrder::STATUS_CANCEL) // Исключаем уже отмененные заказы
+                ->lockForUpdate()
+                ->get();
 
             echo "START Rent count: " . count($rent_orders) . PHP_EOL;
             $start_text = "Activate Rent Start count: " . count($rent_orders) . PHP_EOL;

@@ -4,6 +4,7 @@ namespace App\Services\Activate;
 
 use App\Dto\BotDto;
 use App\Dto\BotFactory;
+use App\Helpers\BotLogHelpers;
 use App\Helpers\OrdersHelper;
 use App\Models\Activate\SmsCountry;
 use App\Models\Bot\SmsBot;
@@ -13,7 +14,9 @@ use App\Services\External\BottApi;
 use App\Services\External\SmsActivateApi;
 use App\Services\MainService;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\RequestOptions;
+use Log;
 use RuntimeException;
 use Exception;
 
@@ -117,6 +120,7 @@ class OrderService extends MainService
                     $order = SmsOrder::create($data);
                     $result = $smsActivate->setStatus($order, SmsOrder::ACCESS_RETRY_GET);
                     $result = $this->getStatus($order->org_id, $botDto);
+                    Log::info('Activate: Произошло создание заказа (списание баланса) ' . $order->id);
 
                     array_push($response, [
                         'id' => $order->org_id,
@@ -207,6 +211,8 @@ class OrderService extends MainService
         $result = $smsActivate->setStatus($order, SmsOrder::ACCESS_RETRY_GET);
         $result = $this->getStatus($order->org_id, $botDto);
 
+        Log::info('Activate: Произошло создание заказа (списание баланса) ' . $order->id);
+
         $result = [
             'id' => $order->org_id,
             'phone' => $serviceResult['phoneNumber'],
@@ -228,6 +234,7 @@ class OrderService extends MainService
      * @param BotDto $botDto
      * @param SmsOrder $order
      * @return mixed
+     * @throws GuzzleException
      */
     public
     function cancel(array $userData, BotDto $botDto, SmsOrder $order)
@@ -257,7 +264,9 @@ class OrderService extends MainService
         // Возврат баланаса если номер не использовали
         if (is_null($order->codes)) {
             $amountFinal = $order->price_final;
+            BotLogHelpers::notifyBotLog('(🔴SUB ' . __FUNCTION__ . ' Activate): ' . 'Вернул баланс order_id = ' . $order->id);
             $result = BottApi::addBalance($botDto, $userData, $amountFinal, 'Возврат баланса, активация отменена order_id: ' . $order->id);
+            Log::info('Activate: Произошла отмена заказа (возврат баланса) ' . $order->id);
         } else {
             throw new RuntimeException('Not save order service');
         }
@@ -402,7 +411,6 @@ class OrderService extends MainService
                         }
                         break;
                     default:
-//                        throw new RuntimeException('Nеизвестный статус: ' . $order->id . $resultStatus);
                         throw new RuntimeException('Неизвестный статус: ' . $order->id);
                 }
         }
@@ -432,8 +440,12 @@ class OrderService extends MainService
         try {
             $statuses = [SmsOrder::STATUS_OK, SmsOrder::STATUS_WAIT_CODE, SmsOrder::STATUS_WAIT_RETRY];
 
-            $orders = SmsOrder::query()->whereIn('status', $statuses)
-                ->where('end_time', '<=', time())->get();
+            $orders = SmsOrder::query()
+                ->whereIn('status', $statuses)
+                ->where('end_time', '<=', time())
+                ->where('status', '!=', SmsOrder::STATUS_CANCEL) // Исключаем уже отмененные заказы
+                ->lockForUpdate()
+                ->get();
 
             echo "START count:" . count($orders) . PHP_EOL;
 
