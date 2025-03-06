@@ -100,7 +100,7 @@ class BotController extends Controller
                 return ApiHelpers::success(BotFactory::fromEntity($bot)->getSettings());
             } else {
                 $botDto = BotFactory::fromEntity($bot);
-                return $botDto->color;
+                return ApiHelpers::success($botDto->color);
             }
 
         } catch (\RuntimeException $r) {
