@@ -51,10 +51,10 @@ class BotController extends Controller
             );
             return ApiHelpers::success(BotFactory::fromEntity($bot)->getArray());
         } catch (\RuntimeException $r) {
-            BotLogHelpers::notifyBotLog('(🔴R '.__FUNCTION__.' Activate): ' . $r->getMessage());
+            BotLogHelpers::notifyBotLog('(🔴R ' . __FUNCTION__ . ' Activate): ' . $r->getMessage());
             return ApiHelpers::error($r->getMessage());
         } catch (\Exception $e) {
-            BotLogHelpers::notifyBotLog('(🔴E '.__FUNCTION__.' Activate): ' . $e->getMessage());
+            BotLogHelpers::notifyBotLog('(🔴E ' . __FUNCTION__ . ' Activate): ' . $e->getMessage());
             Log::error($e->getMessage());
             return ApiHelpers::error('Module creation error');
         }
@@ -74,10 +74,10 @@ class BotController extends Controller
                 return ApiHelpers::error('Not found module.');
             return ApiHelpers::success(BotFactory::fromEntity($bot)->getArray());
         } catch (\RuntimeException $r) {
-            BotLogHelpers::notifyBotLog('(🔴R '.__FUNCTION__.' Activate): ' . $r->getMessage());
+            BotLogHelpers::notifyBotLog('(🔴R ' . __FUNCTION__ . ' Activate): ' . $r->getMessage());
             return ApiHelpers::error($r->getMessage());
         } catch (\Exception $e) {
-            BotLogHelpers::notifyBotLog('(🔴E '.__FUNCTION__.' Activate): ' . $e->getMessage());
+            BotLogHelpers::notifyBotLog('(🔴E ' . __FUNCTION__ . ' Activate): ' . $e->getMessage());
             Log::error($e->getMessage());
             return ApiHelpers::error('Module get error');
         }
@@ -96,16 +96,18 @@ class BotController extends Controller
             if (empty($bot))
                 throw new \RuntimeException('Not found module.');
 
-            $botDto = BotFactory::fromEntity($bot);
+            if ($bot->is_saved = true) {
+                return ApiHelpers::success(BotFactory::fromEntity($bot)->getSettings());
+            } else {
+                $botDto = BotFactory::fromEntity($bot);
+                return $botDto->color;
+            }
 
-            $result = $botDto->color;
-
-            return ApiHelpers::success($result);
         } catch (\RuntimeException $r) {
-            BotLogHelpers::notifyBotLog('(🔴R '.__FUNCTION__.' Activate): ' . $r->getMessage());
+            BotLogHelpers::notifyBotLog('(🔴R ' . __FUNCTION__ . ' Activate): ' . $r->getMessage());
             return ApiHelpers::error($r->getMessage());
         } catch (\Exception $e) {
-            BotLogHelpers::notifyBotLog('(🔴E '.__FUNCTION__.' Activate): ' . $e->getMessage());
+            BotLogHelpers::notifyBotLog('(🔴E ' . __FUNCTION__ . ' Activate): ' . $e->getMessage());
             Log::error($e->getMessage());
             return ApiHelpers::error('Module get settings error');
         }
@@ -124,10 +126,10 @@ class BotController extends Controller
             $bot = SmsBot::query()->where('public_key', $bot->public_key)->where('private_key', $bot->private_key)->first();
             return ApiHelpers::success(BotFactory::fromEntity($bot)->getArray());
         } catch (\RuntimeException $r) {
-            BotLogHelpers::notifyBotLog('(🔴R '.__FUNCTION__.' Activate): ' . $r->getMessage());
+            BotLogHelpers::notifyBotLog('(🔴R ' . __FUNCTION__ . ' Activate): ' . $r->getMessage());
             return ApiHelpers::error($r->getMessage());
         } catch (\Exception $e) {
-            BotLogHelpers::notifyBotLog('(🔴E '.__FUNCTION__.' Activate): ' . $e->getMessage());
+            BotLogHelpers::notifyBotLog('(🔴E ' . __FUNCTION__ . ' Activate): ' . $e->getMessage());
             Log::error($e->getMessage());
             return ApiHelpers::error('Module update error');
         }
@@ -145,10 +147,10 @@ class BotController extends Controller
             $this->botService->delete($request->public_key, $request->private_key);
             return ApiHelpers::success('OK');
         } catch (\RuntimeException $r) {
-            BotLogHelpers::notifyBotLog('(🔴R '.__FUNCTION__.' Activate): ' . $r->getMessage());
+            BotLogHelpers::notifyBotLog('(🔴R ' . __FUNCTION__ . ' Activate): ' . $r->getMessage());
             return ApiHelpers::error($r->getMessage());
         } catch (\Exception $e) {
-            BotLogHelpers::notifyBotLog('(🔴E '.__FUNCTION__.' Activate): ' . $e->getMessage());
+            BotLogHelpers::notifyBotLog('(🔴E ' . __FUNCTION__ . ' Activate): ' . $e->getMessage());
             Log::error($e->getMessage());
             return ApiHelpers::error('Module delete error');
         }
