@@ -96,7 +96,7 @@ class BotController extends Controller
             if (empty($bot))
                 throw new \RuntimeException('Not found module.');
 
-            if ($bot->is_saved = true) {
+            if ($bot->is_saved) {
                 return ApiHelpers::success(BotFactory::fromEntity($bot)->getSettings());
             } else {
                 $botDto = BotFactory::fromEntity($bot);
