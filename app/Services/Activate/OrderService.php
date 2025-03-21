@@ -371,10 +371,11 @@ class OrderService extends MainService
                     case OrdersHelper::requestArray('BAD_KEY'):
                     case OrdersHelper::requestArray('WRONG_ACTIVATION_ID'):
                         $this->notifyTelegram('BAD_KEY' . $order->id);
-                        if (is_null($order->codes))
+                        if (is_null($order->codes) || $order->codes === '[]') {
                             $order->status = SmsOrder::STATUS_CANCEL;
-                        else
+                        } else {
                             $order->status = SmsOrder::STATUS_FINISH;
+                        }
                         $order->save();
                         break;
                     case SmsOrder::STATUS_FINISH:
@@ -394,10 +395,11 @@ class OrderService extends MainService
                                 if ($order_id == $order->org_id) {
                                     // Есть ли смс
                                     $sms = $activateActiveOrder['smsCode'];
-                                    if (is_null($sms))
+                                    if (is_null($sms) || $sms === '[]') {
                                         break;
+                                    }
                                     $sms = json_encode($sms);
-                                    if (is_null($order->codes)) {
+                                    if (is_null($order->codes) || $order->codes === '[]') {
                                         BottApi::createOrder($botDto, $userData, $order->price_final,
                                             'Заказ активации для номера ' . $order->phone .
                                             ' с смс: ' . $sms);
