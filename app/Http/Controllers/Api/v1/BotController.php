@@ -51,10 +51,10 @@ class BotController extends Controller
             );
             return ApiHelpers::success(BotFactory::fromEntity($bot)->getArray());
         }
-//        catch (\RuntimeException $r) {
-//            BotLogHelpers::notifyBotLog('(🔴R ' . __FUNCTION__ . ' Activate): ' . $r->getMessage());
-//            return ApiHelpers::error($r->getMessage());
-//        }
+        catch (\RuntimeException $r) {
+            BotLogHelpers::notifyBotLog('(🔴R ' . __FUNCTION__ . ' Activate): ' . $r->getMessage());
+            return ApiHelpers::error($r->getMessage());
+        }
         catch (\Exception $e) {
             BotLogHelpers::notifyBotLog('(🔴E ' . __FUNCTION__ . ' Activate): ' . $e->getMessage());
             Log::error($e->getMessage());
