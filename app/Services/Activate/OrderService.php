@@ -399,7 +399,7 @@ class OrderService extends MainService
                                         break;
                                     }
                                     $sms = json_encode($sms);
-                                    if (is_null($order->codes) || $order->codes === '[]') {
+                                    if (!is_null($order->codes)) {
                                         BottApi::createOrder($botDto, $userData, $order->price_final,
                                             'Заказ активации для номера ' . $order->phone .
                                             ' с смс: ' . $sms);
