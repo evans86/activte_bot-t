@@ -395,7 +395,7 @@ class OrderService extends MainService
                                 if ($order_id == $order->org_id) {
                                     // Есть ли смс
                                     $sms = $activateActiveOrder['smsCode'];
-                                    if (is_null($sms) || $sms === '[]') {
+                                    if (is_null($sms) || $sms == '[]' || $sms == '[ ]') {
                                         break;
                                     }
                                     $sms = json_encode($sms);
