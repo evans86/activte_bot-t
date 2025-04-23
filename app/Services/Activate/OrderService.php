@@ -371,7 +371,7 @@ class OrderService extends MainService
                     case OrdersHelper::requestArray('BAD_KEY'):
                     case OrdersHelper::requestArray('WRONG_ACTIVATION_ID'):
                         $this->notifyTelegram('BAD_KEY' . $order->id);
-                        if (is_null($order->codes) || $order->codes === '[]') {
+                        if (is_null($order->codes) || $order->codes == '[]' || $order->codes == '[ ]') {
                             $order->status = SmsOrder::STATUS_CANCEL;
                         } else {
                             $order->status = SmsOrder::STATUS_FINISH;
