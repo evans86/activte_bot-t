@@ -479,7 +479,7 @@ class RentController extends Controller
     }
 
     /**
-     * метод обновения кодов через вебхук
+     * Метод обновения кодов через вебхук
      *
      * @param Request $request
      * @return void
