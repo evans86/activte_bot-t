@@ -364,7 +364,6 @@ class OrderService extends MainService
                 break;
             case SmsOrder::STATUS_WAIT_CODE:
             case SmsOrder::STATUS_WAIT_RETRY:
-            case SmsOrder::ORDER_CREATED:
                 $resultStatus = $this->getStatus($order->org_id, $botDto);
                 switch ($resultStatus) {
 //                    case null:
