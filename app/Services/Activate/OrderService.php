@@ -364,6 +364,7 @@ class OrderService extends MainService
                 break;
             case SmsOrder::STATUS_WAIT_CODE:
             case SmsOrder::STATUS_WAIT_RETRY:
+            case SmsOrder::ORDER_CREATED:
                 $resultStatus = $this->getStatus($order->org_id, $botDto);
                 switch ($resultStatus) {
 //                    case null:
@@ -399,10 +400,11 @@ class OrderService extends MainService
                                         break;
                                     }
                                     $sms = json_encode($sms);
-                                    if (!is_null($order->codes)) {
+                                    if (!is_null($order->codes) && $order->is_created == false) {
                                         BottApi::createOrder($botDto, $userData, $order->price_final,
                                             'Заказ активации для номера ' . $order->phone .
                                             ' с смс: ' . $sms);
+                                        $order->is_created = true;
                                     }
                                     $order->codes = $sms;
                                     $order->status = $resultStatus;
