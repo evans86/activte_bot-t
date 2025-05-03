@@ -405,6 +405,7 @@ class OrderService extends MainService
                                             'Заказ активации для номера ' . $order->phone .
                                             ' с смс: ' . $sms);
                                         $order->is_created = true;
+                                        $order->save();
                                     }
                                     $order->codes = $sms;
                                     $order->status = $resultStatus;
