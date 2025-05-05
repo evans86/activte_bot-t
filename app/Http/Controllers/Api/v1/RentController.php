@@ -486,8 +486,13 @@ class RentController extends Controller
      */
     public function updateSmsRent(Request $request)
     {
-        $hook_rent = $request->all();
+        try {
+            $hook_rent = $request->all();
 
-        $this->rentService->updateSms($hook_rent);
+            $this->rentService->updateSms($hook_rent);
+        } catch (Exception $e) {
+            BotLogHelpers::notifyBotLog('(🔴E ' . __FUNCTION__ . ' RENT WEBHOOK ERROR): ' . $e->getMessage());
+            \Log::error($e->getMessage());
+        }
     }
 }
