@@ -395,7 +395,7 @@ class OrderService extends MainService
                                 if ($order_id == $order->org_id) {
                                     // Есть ли смс
                                     $sms = $activateActiveOrder['smsCode'];
-                                    $sms = json_encode($sms);
+
 
                                     if (is_null($sms) || $sms == '[]') {
                                         $sms = $activateActiveOrder['smsText'];
@@ -404,6 +404,8 @@ class OrderService extends MainService
                                     if (is_null($sms) || $sms == '[]') {
                                         break;
                                     }
+
+                                    $sms = json_encode($sms);
 
                                     if (!is_null($order->codes) && $order->is_created == false) {
                                         BottApi::createOrder($botDto, $userData, $order->price_final,
