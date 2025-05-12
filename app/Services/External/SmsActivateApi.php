@@ -37,6 +37,12 @@ class SmsActivateApi
         return $this->request($requestParam, 'POST', true);
     }
 
+    public function getServicesList()
+    {
+        $requestParam = array('api_key' => $this->apiKey, 'action' => __FUNCTION__);
+        return $this->request($requestParam, 'POST', true);
+    }
+
     public function getNumbersStatus($country = null, $operator = null)
     {
         $requestParam = array('api_key' => $this->apiKey, 'action' => __FUNCTION__);

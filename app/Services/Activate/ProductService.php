@@ -44,16 +44,18 @@ class ProductService extends MainService
     public function getPricesCountry($bot)
     {
         $smsActivate = new SmsActivateApi($bot->api_key, $bot->resource_link);
+//        dd($smsActivate);
 
 //        if ($bot->resource_link == BotService::DEFAULT_HOST) {
 
             $services = \Cache::get('services_top_countries');
             if($services === null){
-                $services = $smsActivate->getTopCountriesByService();
+                $services = $smsActivate->getServicesList();
 //                dd($services);
                 \Cache::put('services_top_countries', $services, 900);
             }
             return $this->formingPricesArr($services, $bot);
+
 //        } else {
 //            $services = \Cache::get('services_price');
 //            if($services === null){
@@ -76,19 +78,19 @@ class ProductService extends MainService
             $black_array = explode(',', $bot->black);
 
 //        dd($services);
-        foreach ($services as $key => $service) {
-//            dd($service);
+        foreach ($services['services'] as $key => $service) {
+//            dd($service['code']);
             if (!is_null($bot->black)) {
-                if (in_array($key, $black_array))
+                if (in_array($service['code'], $black_array))
                     continue;
             }
 
             array_push($result, [
-                'name' => $key,
-                'image' => 'https://smsactivate.s3.eu-central-1.amazonaws.com/assets/ico/' . $key . '0.webp',
+                'name' => $service['code'],
+                'image' => 'https://smsactivate.s3.eu-central-1.amazonaws.com/assets/ico/' . $service['code'] . '0.webp',
             ]);
         }
-
+//dd($result);
         return $result;
     }
 
