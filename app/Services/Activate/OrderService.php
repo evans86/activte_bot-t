@@ -168,6 +168,7 @@ class OrderService extends MainService
         );
         $org_id = intval($serviceResult['activationId']);
         // Из него получить цену
+        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' ActivationCOSTAPI: ' . $serviceResult['activationCost']);
         $amountStart = intval(floatval($serviceResult['activationCost']) * 100);
         BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' AmountStart 1: ' . $amountStart);
         BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' ApiRate: ' . $apiRate);
