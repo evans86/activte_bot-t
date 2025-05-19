@@ -183,7 +183,7 @@ class OrderService extends MainService
 
         if ($amountFinal > $userData['money']) {
             $serviceResult = $smsActivate->setStatus($org_id, SmsOrder::ACCESS_CANCEL);
-//            BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' MONEY AMOUNT: ' . $amountFinal . ' USER MONEY: ' . $userData['money']);
+            BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' SERVICE RESULT: ' . $serviceResult);
             throw new RuntimeException('Пополните баланс в боте');
         }
         // Попытаться списать баланс у пользователя
