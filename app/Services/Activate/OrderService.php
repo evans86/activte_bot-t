@@ -169,8 +169,16 @@ class OrderService extends MainService
         $org_id = intval($serviceResult['activationId']);
         // Из него получить цену
         $amountStart = intval(floatval($serviceResult['activationCost']) * 100);
+        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' AmountStart 1: ' . $amountStart);
+        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' ApiRate: ' . $apiRate);
+
         $amountStart = round(($apiRate * $amountStart), 2);
+        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' AmountStart 2: ' . $amountStart);
+
         $amountFinal = $amountStart + $amountStart * $botDto->percent / 100;
+        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' AmountFinal: ' . $amountFinal);
+
+//        '3296.9535'  '2000'
 
         if ($amountFinal > $userData['money']) {
             $serviceResult = $smsActivate->setStatus($org_id, SmsOrder::ACCESS_CANCEL);
