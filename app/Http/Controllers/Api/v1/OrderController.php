@@ -178,7 +178,6 @@ class OrderController extends Controller
                 throw new RuntimeException($result['message']);
             }
             if ($result['data']['money'] == 0) {
-                BotLogHelpers::notifyBotLog('(🔴DEBUG ' . __FUNCTION__ . ' MONEY): ' . $result['data']['money']);
                 throw new RuntimeException('Пополните баланс в боте');
             }
             $country = SmsCountry::query()->where(['org_id' => $request->country])->first();
