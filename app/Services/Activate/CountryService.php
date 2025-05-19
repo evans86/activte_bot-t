@@ -182,7 +182,7 @@ class CountryService extends MainService
             return $result;
         } catch (\Exception $e) {
 //            dd($country);
-            BotLogHelpers::notifyBotLog('(🔴E ' . __FUNCTION__ . ' Activate): ' . $country . $e->getMessage());
+//            BotLogHelpers::notifyBotLog('(🔴E ' . __FUNCTION__ . ' Activate): ' . $country . $e->getMessage());
             return $result;
         }
 
