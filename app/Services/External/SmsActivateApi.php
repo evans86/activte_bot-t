@@ -393,7 +393,15 @@ class SmsActivateApi
                 )
             );
             $context = stream_context_create($options);
-            $result = file_get_contents($this->url, false, $context);
+
+            try {
+                $result = $this->sendRequest($serializedData, 1, 'POST', $context);
+            } catch (\Throwable $e) {
+                BotLogHelpers::notifyBotLog('(🔴E ' . __FUNCTION__ . ' Activate): ' . $e->getMessage());
+                \Log::error($e->getMessage());
+                throw new RuntimeException('Ошибка соединения с сервером!');
+            }
+//            $result = file_get_contents($this->url, false, $context);
 
         }
         if ($getNumber == 1) {
