@@ -263,7 +263,7 @@ class SmsActivateApi
         if ($method === 'GET') {
 
             if ($getNumber == 11) {
-                $result = file_get_contents("$this->url?$serializedData");
+//                $result = file_get_contents("$this->url?$serializedData");
                 try {
                     $result = $this->sendRequest($serializedData, 1);
                 } catch (\Throwable $e) {
@@ -277,7 +277,7 @@ class SmsActivateApi
                 return $result;
             }
 
-            $result = file_get_contents("$this->url?$serializedData");
+//            $result = file_get_contents("$this->url?$serializedData");
 
             try {
                 $result = $this->sendRequest($serializedData, 1);
@@ -318,7 +318,7 @@ class SmsActivateApi
                 throw new RuntimeException('Ошибка соединения с сервером!');
             }
 
-            $result = file_get_contents($this->url, false, $context);
+//            $result = file_get_contents($this->url, false, $context);
 //            dd($result);
             if ($getNumber == 1) {
                 return OrdersHelper::requestArray($result);
