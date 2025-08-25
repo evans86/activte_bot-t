@@ -302,7 +302,8 @@ class SmsActivateApi
         } else {
             $options = array(
                 'http' => array(
-                    'header' => "Content-type: application/x-www-form-urlencoded\r\n",
+                    'header' => "Content-type: application/x-www-form-urlencoded\r\n" .
+                        "User-Agent: Your-App/1.0\r\n",
                     'method' => 'POST',
                     'content' => $serializedData
                 )
