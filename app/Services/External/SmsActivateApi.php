@@ -264,13 +264,13 @@ class SmsActivateApi
 
             if ($getNumber == 11) {
                 $result = file_get_contents("$this->url?$serializedData");
-//                try {
-//                    $result = $this->sendRequest($serializedData, 1);
-//                } catch (\Throwable $e) {
-//                    BotLogHelpers::notifyBotLog('(🔴E ' . __FUNCTION__ . ' Activate): ' . $e->getMessage());
-//                    \Log::error($e->getMessage());
-//                    throw new RuntimeException('Ошибка соединения с сервером!');
-//                }
+                try {
+                    $result = $this->sendRequest($serializedData, 1);
+                } catch (\Throwable $e) {
+                    BotLogHelpers::notifyBotLog('(🔴E ' . __FUNCTION__ . ' Activate): ' . $e->getMessage());
+                    \Log::error($e->getMessage());
+                    throw new RuntimeException('Ошибка соединения с сервером!');
+                }
 
                 $json_string = stripslashes(html_entity_decode($result));
                 $result = json_decode(preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $json_string), true);
@@ -279,13 +279,13 @@ class SmsActivateApi
 
             $result = file_get_contents("$this->url?$serializedData");
 
-//            try {
-//                $result = $this->sendRequest($serializedData, 1);
-//            } catch (\Throwable $e) {
-//                BotLogHelpers::notifyBotLog('(🔴E ' . __FUNCTION__ . ' ACTIVATE): ' . $e->getMessage());
-//                \Log::error($e->getMessage());
-//                throw new RuntimeException('Ошибка соединения с сервером!');
-//            }
+            try {
+                $result = $this->sendRequest($serializedData, 1);
+            } catch (\Throwable $e) {
+                BotLogHelpers::notifyBotLog('(🔴E ' . __FUNCTION__ . ' ACTIVATE): ' . $e->getMessage());
+                \Log::error($e->getMessage());
+                throw new RuntimeException('Ошибка соединения с сервером!');
+            }
 
             if ($getNumber == 3) {
                 $parsedResponse = explode(':', $result);
@@ -310,13 +310,13 @@ class SmsActivateApi
             );
             $context = stream_context_create($options);
 
-//            try {
-//                $result = $this->sendRequest($serializedData, 1, 'POST', $context);
-//            } catch (\Throwable $e) {
-//                BotLogHelpers::notifyBotLog('(🔴E ' . __FUNCTION__ . ' Activate): ' . $e->getMessage());
-//                \Log::error($e->getMessage());
-//                throw new RuntimeException('Ошибка соединения с сервером!');
-//            }
+            try {
+                $result = $this->sendRequest($serializedData, 1, 'POST', $context);
+            } catch (\Throwable $e) {
+                BotLogHelpers::notifyBotLog('(🔴E ' . __FUNCTION__ . ' Activate): ' . $e->getMessage());
+                \Log::error($e->getMessage());
+                throw new RuntimeException('Ошибка соединения с сервером!');
+            }
 
             $result = file_get_contents($this->url, false, $context);
 //            dd($result);
