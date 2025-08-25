@@ -120,6 +120,10 @@ class CountryService extends MainService
 
 //            dd($country);
             $smsCountry = SmsCountry::query()->where(['org_id' => $key])->first();
+            if (!$smsCountry) {
+                // Можно записать в лог или просто пропустить эту итерацию
+                continue;
+            }
 //            dd($smsCountry->org_id);
 
             $price = $country[$service]["cost"];
