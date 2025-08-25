@@ -48,12 +48,12 @@ class ProductService extends MainService
 
 //        if ($bot->resource_link == BotService::DEFAULT_HOST) {
 
-            $services = \Cache::get('services_top_countries');
-            if($services === null){
+//            $services = \Cache::get('services_top_countries');
+//            if($services === null){
                 $services = $smsActivate->getServicesList();
 //                dd($services);
-                \Cache::put('services_top_countries', $services, 900);
-            }
+//                \Cache::put('services_top_countries', $services, 900);
+//            }
             return $this->formingPricesArr($services, $bot);
 
 //        } else {
