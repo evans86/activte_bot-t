@@ -427,17 +427,27 @@ class OrderService extends MainService
                                         break; // Выходим если SMS пустое
                                     }
 
-                                    $sms = json_encode($sms);
+                                    // Преобразуем SMS в массив, если это строка
+                                    if (is_string($sms)) {
+                                        $decoded = json_decode($sms, true);
+                                        $sms = (json_last_error() === JSON_ERROR_NONE) ? $decoded : [$sms];
+                                    }
+
+                                    // Гарантируем, что $sms является массивом
+                                    $smsArray = is_array($sms) ? $sms : [$sms];
 
                                     if (!empty($order->codes) && $order->is_created == false) {
+                                        // Для отображения в сообщении преобразуем в JSON строку
+                                        $smsJson = json_encode($smsArray);
                                         BottApi::createOrder($botDto, $userData, $order->price_final,
                                             'Заказ активации для номера ' . $order->phone .
-                                            ' с смс: ' . $sms);
+                                            ' с смс: ' . $smsJson);
                                         $order->is_created = true;
                                         $order->save();
                                     }
 
-                                    $order->codes = $sms;
+                                    // Сохраняем массив вместо JSON строки
+                                    $order->codes = $smsArray;
                                     $order->status = $resultStatus;
                                     $order->save();
                                     break;
