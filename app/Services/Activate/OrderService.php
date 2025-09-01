@@ -427,18 +427,14 @@ class OrderService extends MainService
                                         break; // Выходим если SMS пустое
                                     }
 
-                                    // Преобразуем SMS в массив, если это строка
-                                    if (is_string($sms)) {
-                                        $decoded = json_decode($sms, true);
-                                        $sms = (json_last_error() === JSON_ERROR_NONE) ? $decoded : [$sms];
+                                    // Обрабатываем SMS для получения корректного JSON массива
+                                    $smsJson = $this->formatSmsAsJsonArray($sms);
+
+                                    if ($smsJson === null) {
+                                        break; // Выходим если SMS пустое
                                     }
 
-                                    // Гарантируем, что $sms является массивом
-                                    $smsArray = is_array($sms) ? $sms : [$sms];
-
                                     if (!empty($order->codes) && $order->is_created == false) {
-                                        // Для отображения в сообщении преобразуем в JSON строку
-                                        $smsJson = json_encode($smsArray);
                                         BottApi::createOrder($botDto, $userData, $order->price_final,
                                             'Заказ активации для номера ' . $order->phone .
                                             ' с смс: ' . $smsJson);
@@ -446,8 +442,8 @@ class OrderService extends MainService
                                         $order->save();
                                     }
 
-                                    // Сохраняем массив вместо JSON строки
-                                    $order->codes = $smsArray;
+                                    // Сохраняем JSON массив в формате ["166981"]
+                                    $order->codes = $smsJson;
                                     $order->status = $resultStatus;
                                     $order->save();
                                     break;
@@ -460,6 +456,45 @@ class OrderService extends MainService
                         throw new RuntimeException('Неизвестный статус: ' . $order->id);
                 }
         }
+    }
+
+    /**
+     * Форматирует SMS данные в JSON массив формата ["166981"]
+     * @param mixed $sms
+     * @return string|null
+     */
+    private function formatSmsAsJsonArray($sms): ?string
+    {
+        // Если SMS пустое или null
+        if ($sms === null || $sms === '' || $sms === '""') {
+            return null;
+        }
+
+        // Если SMS уже является JSON массивом в правильном формате
+        if (is_string($sms) && preg_match('/^\[".*"\]$/', $sms)) {
+            return $sms;
+        }
+
+        // Если SMS является массивом
+        if (is_array($sms)) {
+            return empty($sms) ? null : json_encode($sms);
+        }
+
+        // Если SMS является JSON строкой (но не массивом)
+        if (is_string($sms)) {
+            $decoded = json_decode($sms, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                return empty($decoded) ? null : json_encode($decoded);
+            }
+        }
+
+        // Если SMS - простая строка с кодом
+        if (is_string($sms) && !empty(trim($sms))) {
+            return json_encode([trim($sms)]);
+        }
+
+        // Во всех остальных случаях возвращаем null
+        return null;
     }
 
 //    /**
