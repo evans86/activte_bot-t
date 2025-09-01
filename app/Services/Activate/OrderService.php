@@ -427,12 +427,8 @@ class OrderService extends MainService
                                         break; // Выходим если SMS пустое
                                     }
 
-                                    // Обрабатываем SMS для получения корректного JSON массива
-                                    $smsJson = $this->formatSmsAsJsonArray($sms);
-
-                                    if ($smsJson === null) {
-                                        break; // Выходим если SMS пустое
-                                    }
+                                    // Просто преобразуем в JSON массив формата ["166981"]
+                                    $smsJson = json_encode([$sms]);
 
                                     if (!empty($order->codes) && $order->is_created == false) {
                                         BottApi::createOrder($botDto, $userData, $order->price_final,
@@ -456,45 +452,6 @@ class OrderService extends MainService
                         throw new RuntimeException('Неизвестный статус: ' . $order->id);
                 }
         }
-    }
-
-    /**
-     * Форматирует SMS данные в JSON массив формата ["166981"]
-     * @param mixed $sms
-     * @return string|null
-     */
-    private function formatSmsAsJsonArray($sms): ?string
-    {
-        // Если SMS пустое или null
-        if ($sms === null || $sms === '' || $sms === '""') {
-            return null;
-        }
-
-        // Если SMS уже является JSON массивом в правильном формате
-        if (is_string($sms) && preg_match('/^\[".*"\]$/', $sms)) {
-            return $sms;
-        }
-
-        // Если SMS является массивом
-        if (is_array($sms)) {
-            return empty($sms) ? null : json_encode($sms);
-        }
-
-        // Если SMS является JSON строкой (но не массивом)
-        if (is_string($sms)) {
-            $decoded = json_decode($sms, true);
-            if (json_last_error() === JSON_ERROR_NONE) {
-                return empty($decoded) ? null : json_encode($decoded);
-            }
-        }
-
-        // Если SMS - простая строка с кодом
-        if (is_string($sms) && !empty(trim($sms))) {
-            return json_encode([trim($sms)]);
-        }
-
-        // Во всех остальных случаях возвращаем null
-        return null;
     }
 
 //    /**
