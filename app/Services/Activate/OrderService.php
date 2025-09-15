@@ -177,14 +177,14 @@ class OrderService extends MainService
 //        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' AmountStart 2: ' . $amountStart);
 
         $amountFinal = $amountStart + $amountStart * $botDto->percent / 100;
-//        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' AmountFinal: ' . $amountFinal);
+        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' AmountFinal: ' . $amountFinal);
 
 //        '3296.9535'  '2000'
 
         if ($amountFinal > $userData['money']) {
             $serviceResult = $smsActivate->setStatus($org_id, SmsOrder::ACCESS_CANCEL);
             BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' SERVICE RESULT: ' . $serviceResult);
-            throw new RuntimeException('Пополните баланс в боте');
+            throw new RuntimeException('Пополните баланс в боте.');
         }
         // Попытаться списать баланс у пользователя
         $result = BottApi::subtractBalance($botDto, $userData, $amountFinal, 'Списание баланса для номера '
