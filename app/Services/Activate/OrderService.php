@@ -174,10 +174,10 @@ class OrderService extends MainService
 //        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' ApiRate: ' . $apiRate); // 80.4137
 
         $amountStart = round(($apiRate * $amountStart), 2); // 1608.27
-        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' AmountStart 2: ' . $amountStart);
+//        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' AmountStart 2: ' . $amountStart);
 
         $amountFinal = $amountStart + $amountStart * $botDto->percent / 100;
-//        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' AmountFinal: ' . $amountFinal);
+        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' AmountFinalllll: ' . $amountFinal);
 
 //        '3296.9535'  '2000'
 
