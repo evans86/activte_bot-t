@@ -178,6 +178,7 @@ class OrderService extends MainService
 
         $amountFinal = $amountStart + $amountStart * $botDto->percent / 100;
         BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' AmountFinalllll: ' . $amountFinal);
+        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' userData: ' . $userData['money']);
 
 //        '3296.9535'  '2000'
 
