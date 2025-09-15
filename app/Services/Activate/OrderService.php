@@ -177,8 +177,8 @@ class OrderService extends MainService
 //        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' AmountStart 2: ' . $amountStart);
 
         $amountFinal = $amountStart + $amountStart * $botDto->percent / 100;
-        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' AmountFinalllll: ' . $amountFinal);
-        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' userData: ' . $userData['money']);
+//        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' AmountFinalllll: ' . $amountFinal);
+//        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' userData: ' . $userData['money']);
 
 //        '3296.9535'  '2000'
 
