@@ -150,254 +150,254 @@ class OrderService extends MainService
      * @return array
      * @throws \Exception
      */
-//    public
-//    function create(array $userData, BotDto $botDto, string $country_id): array
-//    {
-//        $apiRate = ProductService::formingRublePrice();
-//        // Создать заказ по апи
-//        $smsActivate = new SmsActivateApi($botDto->api_key, $botDto->resource_link);
-//        $user = SmsUser::query()->where(['telegram_id' => $userData['user']['telegram_id']])->first();
-//        if (is_null($user)) {
-//            throw new RuntimeException('not found user');
-//        }
-//        if (empty($user->service))
-//            throw new RuntimeException('Choose service pls');
-//
-//        $serviceResult = $smsActivate->getNumberV2(
-//            $user->service,
-//            $country_id
-//        );
-//        $org_id = intval($serviceResult['activationId']);
-//        // Из него получить цену
-////        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' ActivationCOSTAPI: ' . $serviceResult['activationCost']);
-//        $amountStart = intval(floatval($serviceResult['activationCost']) * 100); //0.2 * 100 = 20
-////        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' AmountStart 1: ' . $amountStart);
-////        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' ApiRate: ' . $apiRate); // 80.4137
-//
-//        $amountStart = round(($apiRate * $amountStart), 2); // 1608.27
-////        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' AmountStart 2: ' . $amountStart);
-//
-//        $amountFinal = $amountStart + $amountStart * $botDto->percent / 100;
-////        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' AmountFinalllll: ' . $amountFinal);
-////        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' userData: ' . $userData['money']);
-//
-////        '3296.9535'  '2000'
-//
-//        if ($amountFinal > $userData['money']) {
-//            $serviceResult = $smsActivate->setStatus($org_id, SmsOrder::ACCESS_CANCEL);
-////            BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' AmountFinal: ' . $amountFinal);
-//            BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' SERVICE RESULT: ' . $serviceResult);
-//            throw new RuntimeException('Пополните баланс в боте.');
-//        }
-//        // Попытаться списать баланс у пользователя
-//        $result = BottApi::subtractBalance($botDto, $userData, $amountFinal, 'Списание баланса для номера '
-//            . $serviceResult['phoneNumber']);
-//
-//        // Неудача отмена на сервисе
-//        if (!$result['result']) {
-//            $serviceResult = $smsActivate->setStatus($org_id, SmsOrder::ACCESS_CANCEL);
-//            throw new RuntimeException('При списании баланса произошла ошибка: ' . $result['message']);
-//        }
-//
-//        // Удача создание заказа в бд
-//        $country = SmsCountry::query()->where(['org_id' => $country_id])->first();
-//        $dateTime = new \DateTime($serviceResult['activationTime']);
-//        $dateTime = $dateTime->format('U');
-//        $dateTime = intval($dateTime);
-//        $data = [
-//            'bot_id' => $botDto->id,
-//            'user_id' => $user->id,
-//            'service' => $user->service,
-//            'country_id' => $country->id,
-//            'org_id' => $org_id,
-//            'phone' => $serviceResult['phoneNumber'],
-//            'codes' => null,
-//            'status' => SmsOrder::STATUS_WAIT_CODE, //4
-//            'start_time' => $dateTime,
-//            'end_time' => $dateTime + 1177,
-//            'operator' => $serviceResult['activationOperator'],
-//            'price_final' => $amountFinal,
-//            'price_start' => $amountStart,
-//        ];
-//
-//        $order = SmsOrder::create($data);
-//        $result = $smsActivate->setStatus($order, SmsOrder::ACCESS_RETRY_GET);
-//        $result = $this->getStatus($order->org_id, $botDto);
-//
-//        Log::info('Activate: Произошло создание заказа (списание баланса) ' . $order->id);
-//
-//        $result = [
-//            'id' => $order->org_id,
-//            'phone' => $serviceResult['phoneNumber'],
-//            'time' => $dateTime,
-//            'status' => $order->status,
-//            'codes' => null,
-//            'country' => $country->org_id,
-//            'operator' => $serviceResult['activationOperator'],
-//            'service' => $user->service,
-//            'cost' => $amountFinal
-//        ];
-//        return $result;
-//    }
+    public
+    function create(array $userData, BotDto $botDto, string $country_id): array
+    {
+        $apiRate = ProductService::formingRublePrice();
+        // Создать заказ по апи
+        $smsActivate = new SmsActivateApi($botDto->api_key, $botDto->resource_link);
+        $user = SmsUser::query()->where(['telegram_id' => $userData['user']['telegram_id']])->first();
+        if (is_null($user)) {
+            throw new RuntimeException('not found user');
+        }
+        if (empty($user->service))
+            throw new RuntimeException('Choose service pls');
+
+        $serviceResult = $smsActivate->getNumberV2(
+            $user->service,
+            $country_id
+        );
+        $org_id = intval($serviceResult['activationId']);
+        // Из него получить цену
+//        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' ActivationCOSTAPI: ' . $serviceResult['activationCost']);
+        $amountStart = intval(floatval($serviceResult['activationCost']) * 100); //0.2 * 100 = 20
+//        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' AmountStart 1: ' . $amountStart);
+//        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' ApiRate: ' . $apiRate); // 80.4137
+
+        $amountStart = round(($apiRate * $amountStart), 2); // 1608.27
+//        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' AmountStart 2: ' . $amountStart);
+
+        $amountFinal = $amountStart + $amountStart * $botDto->percent / 100;
+//        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' AmountFinalllll: ' . $amountFinal);
+//        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' userData: ' . $userData['money']);
+
+//        '3296.9535'  '2000'
+
+        if ($amountFinal > $userData['money']) {
+            $serviceResult = $smsActivate->setStatus($org_id, SmsOrder::ACCESS_CANCEL);
+//            BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' AmountFinal: ' . $amountFinal);
+            BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' SERVICE RESULT: ' . $serviceResult);
+            throw new RuntimeException('Пополните баланс в боте.');
+        }
+        // Попытаться списать баланс у пользователя
+        $result = BottApi::subtractBalance($botDto, $userData, $amountFinal, 'Списание баланса для номера '
+            . $serviceResult['phoneNumber']);
+
+        // Неудача отмена на сервисе
+        if (!$result['result']) {
+            $serviceResult = $smsActivate->setStatus($org_id, SmsOrder::ACCESS_CANCEL);
+            throw new RuntimeException('При списании баланса произошла ошибка: ' . $result['message']);
+        }
+
+        // Удача создание заказа в бд
+        $country = SmsCountry::query()->where(['org_id' => $country_id])->first();
+        $dateTime = new \DateTime($serviceResult['activationTime']);
+        $dateTime = $dateTime->format('U');
+        $dateTime = intval($dateTime);
+        $data = [
+            'bot_id' => $botDto->id,
+            'user_id' => $user->id,
+            'service' => $user->service,
+            'country_id' => $country->id,
+            'org_id' => $org_id,
+            'phone' => $serviceResult['phoneNumber'],
+            'codes' => null,
+            'status' => SmsOrder::STATUS_WAIT_CODE, //4
+            'start_time' => $dateTime,
+            'end_time' => $dateTime + 1177,
+            'operator' => $serviceResult['activationOperator'],
+            'price_final' => $amountFinal,
+            'price_start' => $amountStart,
+        ];
+
+        $order = SmsOrder::create($data);
+        $result = $smsActivate->setStatus($order, SmsOrder::ACCESS_RETRY_GET);
+        $result = $this->getStatus($order->org_id, $botDto);
+
+        Log::info('Activate: Произошло создание заказа (списание баланса) ' . $order->id);
+
+        $result = [
+            'id' => $order->org_id,
+            'phone' => $serviceResult['phoneNumber'],
+            'time' => $dateTime,
+            'status' => $order->status,
+            'codes' => null,
+            'country' => $country->org_id,
+            'operator' => $serviceResult['activationOperator'],
+            'service' => $user->service,
+            'cost' => $amountFinal
+        ];
+        return $result;
+    }
 
     /**
      * Создание заказа с транзакционностью и retry-логикой
      */
-    public function create(array $userData, BotDto $botDto, string $country_id): array
-    {
-        $maxRetries = 3;
-        $lastException = null;
-
-        for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
-            try {
-                return DB::transaction(function () use ($userData, $botDto, $country_id, $attempt) {
-                    $apiRate = ProductService::formingRublePrice();
-                    $smsActivate = new SmsActivateApi($botDto->api_key, $botDto->resource_link);
-
-                    $user = SmsUser::where(['telegram_id' => $userData['user']['telegram_id']])->first();
-                    if (is_null($user)) {
-                        throw new RuntimeException('Пользователь не найден');
-                    }
-                    if (empty($user->service)) {
-                        throw new RuntimeException('Выберите сервис');
-                    }
-
-                    // 1. Сначала резервируем баланс в bot-t
-                    $serviceResult = $smsActivate->getNumberV2($user->service, $country_id);
-                    $org_id = intval($serviceResult['activationId']);
-
-                    $amountStart = intval(floatval($serviceResult['activationCost']) * 100);
-                    $amountStart = round(($apiRate * $amountStart), 2);
-                    $amountFinal = $amountStart + $amountStart * $botDto->percent / 100;
-
-                    if ($amountFinal > $userData['money']) {
-                        $smsActivate->setStatus($org_id, SmsOrder::ACCESS_CANCEL);
-                        throw new RuntimeException('Недостаточно средств. Пополните баланс в боте.');
-                    }
-
-                    // 2. Создаем заказ в bot-t (основная операция)
-                    $orderComment = 'Заказ активации для номера ' . $serviceResult['phoneNumber'] . ' (сервис: ' . $user->service . ')';
-                    $orderResult = $this->createOrderInBotWithRetry($botDto, $userData, $amountFinal, $orderComment);
-
-                    if (!$orderResult['result']) {
-                        $smsActivate->setStatus($org_id, SmsOrder::ACCESS_CANCEL);
-                        throw new RuntimeException('Ошибка создания заказа: ' . $orderResult['message']);
-                    }
-
-                    $orderIdInBot = $orderResult['data']['order_id'] ?? null;
-
-                    // 3. Сохраняем заказ в нашей БД с ID из bot-t
-                    $country = SmsCountry::where(['org_id' => $country_id])->first();
-                    $dateTime = new \DateTime($serviceResult['activationTime']);
-                    $dateTime = $dateTime->format('U');
-                    $dateTime = intval($dateTime);
-
-                    $data = [
-                        'bot_id' => $botDto->id,
-                        'user_id' => $user->id,
-                        'service' => $user->service,
-                        'country_id' => $country->id,
-                        'org_id' => $org_id,
-                        'bot_order_id' => $orderIdInBot, // Сохраняем ID заказа из bot-t
-                        'phone' => $serviceResult['phoneNumber'],
-                        'codes' => null,
-                        'status' => SmsOrder::STATUS_WAIT_CODE,
-                        'start_time' => $dateTime,
-                        'end_time' => $dateTime + 1177,
-                        'operator' => $serviceResult['activationOperator'],
-                        'price_final' => $amountFinal,
-                        'price_start' => $amountStart,
-                        'sync_status' => 'synced', // Статус синхронизации
-                    ];
-
-                    $order = SmsOrder::create($data);
-
-                    // 4. Подтверждаем статус у провайдера
-                    $smsActivate->setStatus($order->org_id, SmsOrder::ACCESS_RETRY_GET);
-                    $this->getStatus($order->org_id, $botDto);
-
-                    Log::info('Activate: Успешное создание заказа', [
-                        'order_id' => $order->id,
-                        'org_id' => $org_id,
-                        'bot_order_id' => $orderIdInBot,
-                        'attempt' => $attempt
-                    ]);
-
-                    return [
-                        'id' => $order->org_id,
-                        'phone' => $serviceResult['phoneNumber'],
-                        'time' => $dateTime,
-                        'status' => $order->status,
-                        'codes' => null,
-                        'country' => $country->org_id,
-                        'operator' => $serviceResult['activationOperator'],
-                        'service' => $user->service,
-                        'cost' => $amountFinal,
-                        'bot_order_id' => $orderIdInBot
-                    ];
-
-                }, 3); // 3 попытки для транзакции
-
-            } catch (Exception $e) {
-                $lastException = $e;
-                Log::warning("Попытка $attempt создания заказа не удалась", [
-                    'error' => $e->getMessage(),
-                    'user_id' => $userData['user']['telegram_id'] ?? null,
-                    'country_id' => $country_id
-                ]);
-
-                if ($attempt < $maxRetries) {
-                    sleep(1); // Ждем перед повторной попыткой
-                    continue;
-                }
-            }
-        }
-
-        // Если все попытки неудачны, логируем и бросаем исключение
-        BotLogHelpers::notifyBotLog("(🔴 CREATE_ORDER_FAILED): Все $maxRetries попыток создания заказа провалились: " . $lastException->getMessage());
-        throw new RuntimeException('Не удалось создать заказ. Попробуйте позже. ' . $lastException->getMessage());
-    }
-
-    /**
-     * Создание заказа в bot-t с повторными попытками
-     */
-    private function createOrderInBotWithRetry(BotDto $botDto, array $userData, int $amount, string $product)
-    {
-        $maxRetries = 3;
-        $lastException = null;
-
-        for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
-            try {
-                $result = BottApi::createOrder($botDto, $userData, $amount, $product);
-
-                if ($result['result']) {
-                    Log::info("Заказ успешно создан в bot-t", [
-                        'attempt' => $attempt,
-                        'amount' => $amount,
-                        'user_id' => $userData['user']['telegram_id']
-                    ]);
-                    return $result;
-                }
-
-                // Если результат false, но нет исключения
-                throw new RuntimeException($result['message'] ?? 'Unknown error from bot-t');
-
-            } catch (Exception $e) {
-                $lastException = $e;
-                Log::warning("Попытка $attempt создания заказа в bot-t не удалась", [
-                    'error' => $e->getMessage(),
-                    'attempt' => $attempt
-                ]);
-
-                if ($attempt < $maxRetries) {
-                    sleep(1);
-                    continue;
-                }
-            }
-        }
-
-        throw new RuntimeException("Не удалось создать заказ в системе после $maxRetries попыток: " . $lastException->getMessage());
-    }
+//    public function create(array $userData, BotDto $botDto, string $country_id): array
+//    {
+//        $maxRetries = 3;
+//        $lastException = null;
+//
+//        for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
+//            try {
+//                return DB::transaction(function () use ($userData, $botDto, $country_id, $attempt) {
+//                    $apiRate = ProductService::formingRublePrice();
+//                    $smsActivate = new SmsActivateApi($botDto->api_key, $botDto->resource_link);
+//
+//                    $user = SmsUser::where(['telegram_id' => $userData['user']['telegram_id']])->first();
+//                    if (is_null($user)) {
+//                        throw new RuntimeException('Пользователь не найден');
+//                    }
+//                    if (empty($user->service)) {
+//                        throw new RuntimeException('Выберите сервис');
+//                    }
+//
+//                    // 1. Сначала резервируем баланс в bot-t
+//                    $serviceResult = $smsActivate->getNumberV2($user->service, $country_id);
+//                    $org_id = intval($serviceResult['activationId']);
+//
+//                    $amountStart = intval(floatval($serviceResult['activationCost']) * 100);
+//                    $amountStart = round(($apiRate * $amountStart), 2);
+//                    $amountFinal = $amountStart + $amountStart * $botDto->percent / 100;
+//
+//                    if ($amountFinal > $userData['money']) {
+//                        $smsActivate->setStatus($org_id, SmsOrder::ACCESS_CANCEL);
+//                        throw new RuntimeException('Недостаточно средств. Пополните баланс в боте.');
+//                    }
+//
+//                    // 2. Создаем заказ в bot-t (основная операция)
+//                    $orderComment = 'Заказ активации для номера ' . $serviceResult['phoneNumber'] . ' (сервис: ' . $user->service . ')';
+//                    $orderResult = $this->createOrderInBotWithRetry($botDto, $userData, $amountFinal, $orderComment);
+//
+//                    if (!$orderResult['result']) {
+//                        $smsActivate->setStatus($org_id, SmsOrder::ACCESS_CANCEL);
+//                        throw new RuntimeException('Ошибка создания заказа: ' . $orderResult['message']);
+//                    }
+//
+//                    $orderIdInBot = $orderResult['data']['order_id'] ?? null;
+//
+//                    // 3. Сохраняем заказ в нашей БД с ID из bot-t
+//                    $country = SmsCountry::where(['org_id' => $country_id])->first();
+//                    $dateTime = new \DateTime($serviceResult['activationTime']);
+//                    $dateTime = $dateTime->format('U');
+//                    $dateTime = intval($dateTime);
+//
+//                    $data = [
+//                        'bot_id' => $botDto->id,
+//                        'user_id' => $user->id,
+//                        'service' => $user->service,
+//                        'country_id' => $country->id,
+//                        'org_id' => $org_id,
+//                        'bot_order_id' => $orderIdInBot, // Сохраняем ID заказа из bot-t
+//                        'phone' => $serviceResult['phoneNumber'],
+//                        'codes' => null,
+//                        'status' => SmsOrder::STATUS_WAIT_CODE,
+//                        'start_time' => $dateTime,
+//                        'end_time' => $dateTime + 1177,
+//                        'operator' => $serviceResult['activationOperator'],
+//                        'price_final' => $amountFinal,
+//                        'price_start' => $amountStart,
+//                        'sync_status' => 'synced', // Статус синхронизации
+//                    ];
+//
+//                    $order = SmsOrder::create($data);
+//
+//                    // 4. Подтверждаем статус у провайдера
+//                    $smsActivate->setStatus($order->org_id, SmsOrder::ACCESS_RETRY_GET);
+//                    $this->getStatus($order->org_id, $botDto);
+//
+//                    Log::info('Activate: Успешное создание заказа', [
+//                        'order_id' => $order->id,
+//                        'org_id' => $org_id,
+//                        'bot_order_id' => $orderIdInBot,
+//                        'attempt' => $attempt
+//                    ]);
+//
+//                    return [
+//                        'id' => $order->org_id,
+//                        'phone' => $serviceResult['phoneNumber'],
+//                        'time' => $dateTime,
+//                        'status' => $order->status,
+//                        'codes' => null,
+//                        'country' => $country->org_id,
+//                        'operator' => $serviceResult['activationOperator'],
+//                        'service' => $user->service,
+//                        'cost' => $amountFinal,
+//                        'bot_order_id' => $orderIdInBot
+//                    ];
+//
+//                }, 3); // 3 попытки для транзакции
+//
+//            } catch (Exception $e) {
+//                $lastException = $e;
+//                Log::warning("Попытка $attempt создания заказа не удалась", [
+//                    'error' => $e->getMessage(),
+//                    'user_id' => $userData['user']['telegram_id'] ?? null,
+//                    'country_id' => $country_id
+//                ]);
+//
+//                if ($attempt < $maxRetries) {
+//                    sleep(1); // Ждем перед повторной попыткой
+//                    continue;
+//                }
+//            }
+//        }
+//
+//        // Если все попытки неудачны, логируем и бросаем исключение
+//        BotLogHelpers::notifyBotLog("(🔴 CREATE_ORDER_FAILED): Все $maxRetries попыток создания заказа провалились: " . $lastException->getMessage());
+//        throw new RuntimeException('Не удалось создать заказ. Попробуйте позже. ' . $lastException->getMessage());
+//    }
+//
+//    /**
+//     * Создание заказа в bot-t с повторными попытками
+//     */
+//    private function createOrderInBotWithRetry(BotDto $botDto, array $userData, int $amount, string $product)
+//    {
+//        $maxRetries = 3;
+//        $lastException = null;
+//
+//        for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
+//            try {
+//                $result = BottApi::createOrder($botDto, $userData, $amount, $product);
+//
+//                if ($result['result']) {
+//                    Log::info("Заказ успешно создан в bot-t", [
+//                        'attempt' => $attempt,
+//                        'amount' => $amount,
+//                        'user_id' => $userData['user']['telegram_id']
+//                    ]);
+//                    return $result;
+//                }
+//
+//                // Если результат false, но нет исключения
+//                throw new RuntimeException($result['message'] ?? 'Unknown error from bot-t');
+//
+//            } catch (Exception $e) {
+//                $lastException = $e;
+//                Log::warning("Попытка $attempt создания заказа в bot-t не удалась", [
+//                    'error' => $e->getMessage(),
+//                    'attempt' => $attempt
+//                ]);
+//
+//                if ($attempt < $maxRetries) {
+//                    sleep(1);
+//                    continue;
+//                }
+//            }
+//        }
+//
+//        throw new RuntimeException("Не удалось создать заказ в системе после $maxRetries попыток: " . $lastException->getMessage());
+//    }
 
     /**
      * Отмена заказа со статусом 9
