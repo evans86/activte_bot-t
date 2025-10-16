@@ -153,91 +153,94 @@ class OrderService extends MainService
     public
     function create(array $userData, BotDto $botDto, string $country_id): array
     {
-        $apiRate = ProductService::formingRublePrice();
-        // Создать заказ по апи
-        $smsActivate = new SmsActivateApi($botDto->api_key, $botDto->resource_link);
-        $user = SmsUser::query()->where(['telegram_id' => $userData['user']['telegram_id']])->first();
-        if (is_null($user)) {
-            throw new RuntimeException('not found user');
-        }
-        if (empty($user->service))
-            throw new RuntimeException('Choose service pls');
+        return \DB::transaction(function () use ($userData, $botDto, $country_id) {
+            $apiRate = ProductService::formingRublePrice();
+            // Создать заказ по апи
+            $smsActivate = new SmsActivateApi($botDto->api_key, $botDto->resource_link);
+            $user = SmsUser::query()->where(['telegram_id' => $userData['user']['telegram_id']])->first();
 
-        $serviceResult = $smsActivate->getNumberV2(
-            $user->service,
-            $country_id
-        );
-        $org_id = intval($serviceResult['activationId']);
-        // Из него получить цену
+            if (is_null($user)) {
+                throw new RuntimeException('not found user');
+            }
+            if (empty($user->service))
+                throw new RuntimeException('Choose service pls');
+
+            $serviceResult = $smsActivate->getNumberV2(
+                $user->service,
+                $country_id
+            );
+            $org_id = intval($serviceResult['activationId']);
+            // Из него получить цену
 //        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' ActivationCOSTAPI: ' . $serviceResult['activationCost']);
-        $amountStart = intval(floatval($serviceResult['activationCost']) * 100); //0.2 * 100 = 20
+            $amountStart = intval(floatval($serviceResult['activationCost']) * 100); //0.2 * 100 = 20
 //        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' AmountStart 1: ' . $amountStart);
 //        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' ApiRate: ' . $apiRate); // 80.4137
 
-        $amountStart = round(($apiRate * $amountStart), 2); // 1608.27
+            $amountStart = round(($apiRate * $amountStart), 2); // 1608.27
 //        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' AmountStart 2: ' . $amountStart);
 
-        $amountFinal = $amountStart + $amountStart * $botDto->percent / 100;
+            $amountFinal = $amountStart + $amountStart * $botDto->percent / 100;
 //        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' AmountFinalllll: ' . $amountFinal);
 //        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' userData: ' . $userData['money']);
 
 //        '3296.9535'  '2000'
 
-        if ($amountFinal > $userData['money']) {
-            $serviceResult = $smsActivate->setStatus($org_id, SmsOrder::ACCESS_CANCEL);
+            if ($amountFinal > $userData['money']) {
+                $serviceResult = $smsActivate->setStatus($org_id, SmsOrder::ACCESS_CANCEL);
 //            BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' AmountFinal: ' . $amountFinal);
-            BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' SERVICE RESULT: ' . $serviceResult);
-            throw new RuntimeException('Пополните баланс в боте.');
-        }
-        // Попытаться списать баланс у пользователя
-        $result = BottApi::subtractBalance($botDto, $userData, $amountFinal, 'Списание баланса для номера '
-            . $serviceResult['phoneNumber']);
+                BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' SERVICE RESULT: ' . $serviceResult);
+                throw new RuntimeException('Пополните баланс в боте.');
+            }
+            // Попытаться списать баланс у пользователя
+            $result = BottApi::subtractBalance($botDto, $userData, $amountFinal, 'Списание баланса для номера '
+                . $serviceResult['phoneNumber']);
 
-        // Неудача отмена на сервисе
-        if (!$result['result']) {
-            $serviceResult = $smsActivate->setStatus($org_id, SmsOrder::ACCESS_CANCEL);
-            throw new RuntimeException('При списании баланса произошла ошибка: ' . $result['message']);
-        }
+            // Неудача отмена на сервисе
+            if (!$result['result']) {
+                $serviceResult = $smsActivate->setStatus($org_id, SmsOrder::ACCESS_CANCEL);
+                throw new RuntimeException('При списании баланса произошла ошибка: ' . $result['message']);
+            }
 
-        // Удача создание заказа в бд
-        $country = SmsCountry::query()->where(['org_id' => $country_id])->first();
-        $dateTime = new \DateTime($serviceResult['activationTime']);
-        $dateTime = $dateTime->format('U');
-        $dateTime = intval($dateTime);
-        $data = [
-            'bot_id' => $botDto->id,
-            'user_id' => $user->id,
-            'service' => $user->service,
-            'country_id' => $country->id,
-            'org_id' => $org_id,
-            'phone' => $serviceResult['phoneNumber'],
-            'codes' => null,
-            'status' => SmsOrder::STATUS_WAIT_CODE, //4
-            'start_time' => $dateTime,
-            'end_time' => $dateTime + 1177,
-            'operator' => $serviceResult['activationOperator'],
-            'price_final' => $amountFinal,
-            'price_start' => $amountStart,
-        ];
+            // Удача создание заказа в бд
+            $country = SmsCountry::query()->where(['org_id' => $country_id])->first();
+            $dateTime = new \DateTime($serviceResult['activationTime']);
+            $dateTime = $dateTime->format('U');
+            $dateTime = intval($dateTime);
+            $data = [
+                'bot_id' => $botDto->id,
+                'user_id' => $user->id,
+                'service' => $user->service,
+                'country_id' => $country->id,
+                'org_id' => $org_id,
+                'phone' => $serviceResult['phoneNumber'],
+                'codes' => null,
+                'status' => SmsOrder::STATUS_WAIT_CODE, //4
+                'start_time' => $dateTime,
+                'end_time' => $dateTime + 1177,
+                'operator' => $serviceResult['activationOperator'],
+                'price_final' => $amountFinal,
+                'price_start' => $amountStart,
+            ];
 
-        $order = SmsOrder::create($data);
-        $result = $smsActivate->setStatus($order, SmsOrder::ACCESS_RETRY_GET);
-        $result = $this->getStatus($order->org_id, $botDto);
+            $order = SmsOrder::create($data);
+            $result = $smsActivate->setStatus($order, SmsOrder::ACCESS_RETRY_GET);
+            $result = $this->getStatus($order->org_id, $botDto);
 
-        Log::info('Activate: Произошло создание заказа (списание баланса) ' . $order->id);
+            Log::info('Activate: Произошло создание заказа (списание баланса) ' . $order->id);
 
-        $result = [
-            'id' => $order->org_id,
-            'phone' => $serviceResult['phoneNumber'],
-            'time' => $dateTime,
-            'status' => $order->status,
-            'codes' => null,
-            'country' => $country->org_id,
-            'operator' => $serviceResult['activationOperator'],
-            'service' => $user->service,
-            'cost' => $amountFinal
-        ];
-        return $result;
+            $result = [
+                'id' => $order->org_id,
+                'phone' => $serviceResult['phoneNumber'],
+                'time' => $dateTime,
+                'status' => $order->status,
+                'codes' => null,
+                'country' => $country->org_id,
+                'operator' => $serviceResult['activationOperator'],
+                'service' => $user->service,
+                'cost' => $amountFinal
+            ];
+            return $result;
+        });
     }
 
     /**
