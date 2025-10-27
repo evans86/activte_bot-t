@@ -524,7 +524,7 @@ class OrderService extends MainService
 
     /**
      * Получение активного заказа и обновление кодов
-     * ИСПРАВЛЕННАЯ ВЕРСИЯ - предотвращает дублирование уведомлений
+     * ПОЛНОСТЬЮ ПЕРЕПИСАННАЯ ЛОГИКА - без дублирования уведомлений
      */
     public function order(array $userData, BotDto $botDto, SmsOrder $order): void
     {
@@ -533,74 +533,62 @@ class OrderService extends MainService
             return;
         }
 
-        // Если заказ в ожидании кода - проверяем статус
-        if (in_array($order->status, [SmsOrder::STATUS_WAIT_CODE, SmsOrder::STATUS_WAIT_RETRY])) {
-            $resultStatus = $this->getStatus($order->org_id, $botDto);
+        // Получаем текущий статус от провайдера
+        $providerStatus = $this->getStatus($order->org_id, $botDto);
 
-            switch ($resultStatus) {
-                case OrdersHelper::requestArray('BAD_KEY'):
-                case OrdersHelper::requestArray('WRONG_ACTIVATION_ID'):
-                    $this->handleBadKey($order);
-                    break;
+        // Обрабатываем критические ошибки
+        if (in_array($providerStatus, [OrdersHelper::requestArray('BAD_KEY'), OrdersHelper::requestArray('WRONG_ACTIVATION_ID')])) {
+            $this->handleCriticalError($order, $providerStatus);
+            return;
+        }
 
-                case SmsOrder::STATUS_OK:
-                    $this->processOkStatus($botDto, $userData, $order, $resultStatus);
-                    break;
+        // Если статус не изменился и у нас уже есть код - ничего не делаем
+        if ($order->status == $providerStatus && !empty($order->codes)) {
+            return;
+        }
 
-                case SmsOrder::STATUS_WAIT_CODE:
-                case SmsOrder::STATUS_WAIT_RETRY:
-                    // Просто обновляем статус, если нет нового SMS
-                    if ($order->status != $resultStatus) {
-                        $order->status = $resultStatus;
-                        $order->save();
-                    }
-                    break;
+        // Обновляем базовый статус заказа
+        if ($order->status != $providerStatus) {
+            $order->status = $providerStatus;
+        }
 
-                default:
-                    \Log::warning('Неизвестный статус заказа', [
-                        'order_id' => $order->id,
-                        'status' => $resultStatus
-                    ]);
-            }
+        // ЕСЛИ СТАТУС "OK" - ЗНАЧИТ ЕСТЬ SMS, ПОЛУЧАЕМ И ОБРАБАТЫВАЕМ
+        if ($providerStatus === SmsOrder::STATUS_OK) {
+            $this->processSmsCode($botDto, $userData, $order);
+        } else {
+            // Для других статусов просто сохраняем
+            $order->save();
         }
     }
 
     /**
-     * Обработка статуса OK - когда пришло SMS
+     * Обработка SMS кода (ОСНОВНАЯ ЛОГИКА)
      */
-    private function processOkStatus(BotDto $botDto, array $userData, SmsOrder $order, string $resultStatus): void
+    private function processSmsCode(BotDto $botDto, array $userData, SmsOrder $order): void
     {
         $smsActivate = new SmsActivateApi($botDto->api_key, $botDto->resource_link);
-        $activateActiveOrders = $smsActivate->getActiveActivations();
 
-        if (!isset($activateActiveOrders['activeActivations'])) {
+        // Получаем активные активации
+        $activeActivations = $smsActivate->getActiveActivations();
+
+        if (!isset($activeActivations['activeActivations']) || empty($activeActivations['activeActivations'])) {
+            \Log::warning('No active activations found', ['order_id' => $order->id]);
             return;
         }
 
-        foreach ($activateActiveOrders['activeActivations'] as $activateActiveOrder) {
-            if (($activateActiveOrder['activationId'] ?? null) != $order->org_id) {
+        // Ищем нашу активацию
+        foreach ($activeActivations['activeActivations'] as $activation) {
+            if (($activation['activationId'] ?? null) != $order->org_id) {
                 continue;
             }
 
-            $sms = $activateActiveOrder['smsCode'] ?? $activateActiveOrder['smsText'] ?? null;
+            // Получаем SMS код
+            $smsCode = $activation['smsCode'] ?? $activation['smsText'] ?? null;
 
-            if ($this->isSmsEmpty($sms)) {
-                break;
-            }
-
-            $smsJson = json_encode([$sms]);
-
-            // КРИТИЧЕСКИ ВАЖНО: создаем уведомление только если:
-            // 1. SMS не пустое
-            // 2. У нас еще нет кода в заказе ИЛИ код изменился
-            // 3. Заказ-уведомление еще не создан
-            if (empty($order->codes) && $order->is_created == false) {
-                $this->createSmsNotification($botDto, $userData, $order, $smsJson, $resultStatus);
-            } elseif ($order->codes != $smsJson) {
-                // Если код изменился - обновляем, но не создаем новое уведомление
-                $order->codes = $smsJson;
-                $order->status = $resultStatus;
-                $order->save();
+            if ($this->isValidSms($smsCode)) {
+                $this->handleNewSms($botDto, $userData, $order, $smsCode);
+            } else {
+                \Log::info('No SMS code yet', ['order_id' => $order->id]);
             }
 
             break;
@@ -608,46 +596,65 @@ class OrderService extends MainService
     }
 
     /**
-     * Создание уведомления о SMS (атомарно с блокировкой)
+     * Обработка нового SMS кода (САМАЯ ВАЖНАЯ ЧАСТЬ)
      */
-    private function createSmsNotification(BotDto $botDto, array $userData, SmsOrder $order, string $smsJson, string $resultStatus): void
+    private function handleNewSms(BotDto $botDto, array $userData, SmsOrder $order, string $smsCode): void
     {
-        DB::transaction(function () use ($botDto, $userData, $order, $smsJson, $resultStatus) {
-            // Блокируем заказ для предотвращения race condition
+        DB::transaction(function () use ($botDto, $userData, $order, $smsCode) {
+            // Блокируем заказ для полной безопасности
             $lockedOrder = SmsOrder::where('id', $order->id)->lockForUpdate()->first();
 
             if (!$lockedOrder) {
+                \Log::error('Order not found after lock', ['order_id' => $order->id]);
                 return;
             }
 
-            // Двойная проверка - убеждаемся что заказ еще не обработан
-            if ($lockedOrder->is_created || !empty($lockedOrder->codes)) {
+            // ПРЕДОТВРАЩАЕМ ДУБЛИРОВАНИЕ: проверяем, не обработан ли уже заказ
+            if ($lockedOrder->is_created) {
+                \Log::info('Order notification already created', ['order_id' => $lockedOrder->id]);
                 return;
             }
 
+            // Форматируем SMS код
+            $smsJson = json_encode([$smsCode]);
+
+            // Если код уже такой же - ничего не делаем
+            if ($lockedOrder->codes === $smsJson) {
+                return;
+            }
+
+            // СОЗДАЕМ УВЕДОМЛЕНИЕ ТОЛЬКО ОДИН РАЗ
             try {
-                // Создаем заказ-уведомление в bot-t
+                \Log::info('Creating SMS notification', [
+                    'order_id' => $lockedOrder->id,
+                    'phone' => $lockedOrder->phone,
+                    'sms_code' => $smsCode
+                ]);
+
                 $result = BottApi::createOrder(
                     $botDto,
                     $userData,
                     $lockedOrder->price_final,
-                    'SMS код для номера ' . $lockedOrder->phone . ': ' . $smsJson
+                    "SMS код для номера {$lockedOrder->phone}: {$smsCode}"
                 );
 
-                // Если успешно - обновляем заказ
-                if ($result && isset($result['result']) && $result['result']) {
+                if ($result && ($result['result'] ?? false)) {
+                    // ВСЕ ИЗМЕНЕНИЯ В БАЗУ ДЕЛАЕМ ТОЛЬКО ПОСЛЕ УСПЕШНОГО СОЗДАНИЯ УВЕДОМЛЕНИЯ
                     $lockedOrder->codes = $smsJson;
-                    $lockedOrder->is_created = true;
-                    $lockedOrder->status = $resultStatus;
+                    $lockedOrder->is_created = true; // ВАЖНО: помечаем как обработанный
+                    $lockedOrder->status = SmsOrder::STATUS_OK;
                     $lockedOrder->save();
 
                     \Log::info('SMS notification created successfully', [
                         'order_id' => $lockedOrder->id,
-                        'org_id' => $lockedOrder->org_id,
                         'bot_order_id' => $result['data']['order_id'] ?? 'unknown'
                     ]);
+
+                    // Дополнительно логируем в телеграм
+                    BotLogHelpers::notifyBotLog("✅ SMS получен для заказа {$lockedOrder->id}, номер: {$lockedOrder->phone}, код: {$smsCode}");
+
                 } else {
-                    \Log::error('Failed to create SMS notification - API error', [
+                    \Log::error('Failed to create SMS notification - API returned false', [
                         'order_id' => $lockedOrder->id,
                         'response' => $result
                     ]);
@@ -656,44 +663,53 @@ class OrderService extends MainService
             } catch (Exception $e) {
                 \Log::error('Exception when creating SMS notification', [
                     'order_id' => $lockedOrder->id,
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
                 ]);
-                // Не прерываем выполнение - пользователь все равно получит код при следующем запросе
+
+                // НЕ СОХРАНЯЕМ КОД ЕСЛИ УВЕДОМЛЕНИЕ НЕ СОЗДАНО
+                // Это предотвратит ситуацию когда код есть, но уведомления нет
             }
         });
     }
 
     /**
-     * Проверка что SMS не пустое
+     * Проверка валидности SMS кода
      */
-    private function isSmsEmpty($sms): bool
+    private function isValidSms($sms): bool
     {
-        return empty($sms) ||
-            $sms === '[]' ||
-            $sms === '[ ]' ||
-            $sms === '""' ||
-            $sms === '' ||
-            (is_array($sms) && empty($sms));
+        if (empty($sms)) {
+            return false;
+        }
+
+        // Убираем лишние пробелы и проверяем длину
+        $cleanSms = trim($sms);
+
+        // SMS код должен быть не пустым и содержать цифры
+        return !empty($cleanSms) &&
+            strlen($cleanSms) >= 4 &&
+            preg_match('/\d/', $cleanSms) &&
+            $cleanSms !== '[]' &&
+            $cleanSms !== '[ ]' &&
+            $cleanSms !== '""';
     }
 
     /**
-     * Обработка ошибок BAD_KEY и WRONG_ACTIVATION_ID
+     * Обработка критических ошибок
      */
-    private function handleBadKey(SmsOrder $order): void
+    private function handleCriticalError(SmsOrder $order, string $errorStatus): void
     {
-        $this->notifyTelegram('BAD_KEY detected for order: ' . $order->id);
+        $errorMessage = "Критическая ошибка для заказа {$order->id}: {$errorStatus}";
+        \Log::error($errorMessage);
+        BotLogHelpers::notifyBotLog("🔴 {$errorMessage}");
 
-        $isCodesEmpty = empty($order->codes) ||
-            $order->codes === '[]' ||
-            $order->codes === '[ ]' ||
-            $order->codes === '""' ||
-            $order->codes === '';
-
-        if ($isCodesEmpty) {
-            $order->status = SmsOrder::STATUS_CANCEL;
-        } else {
+        // Если есть код - завершаем, если нет - отменяем
+        if (!empty($order->codes)) {
             $order->status = SmsOrder::STATUS_FINISH;
+        } else {
+            $order->status = SmsOrder::STATUS_CANCEL;
         }
+
         $order->save();
     }
 
