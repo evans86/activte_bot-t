@@ -201,19 +201,19 @@ class OrderController extends Controller
         }
     }
 
-    /**
-     * Получение активного заказа
-     *
-     * Request[
-     *  'user_id'
-     *  'order_id'
-     *  'user_secret_key'
-     *  'public_key'
-     * ]
-     *
-     * @param Request $request
-     * @return array|string
-     */
+//    /**
+//     * Получение активного заказа
+//     *
+//     * Request[
+//     *  'user_id'
+//     *  'order_id'
+//     *  'user_secret_key'
+//     *  'public_key'
+//     * ]
+//     *
+//     * @param Request $request
+//     * @return array|string
+//     */
 //    public function getOrder(Request $request)
 //    {
 //        try {
@@ -280,57 +280,112 @@ class OrderController extends Controller
 //        }
 //    }
 
+    /**
+     * Получение активного заказа
+     *
+     * Request[
+     *  'user_id'
+     *  'order_id'
+     *  'user_secret_key'
+     *  'public_key'
+     * ]
+     *
+     * @param Request $request
+     * @return array|string
+     */
     public function getOrder(Request $request)
     {
-        // Быстрая валидация
-        if (is_null($request->order_id) || is_null($request->user_id) ||
-            is_null($request->user_secret_key) || is_null($request->public_key)) {
-            return ApiHelpers::error('Missing required parameters');
-        }
-
         try {
-            $bot = SmsBot::where('public_key', $request->public_key)->first();
-            if (!$bot) return ApiHelpers::error('Module not found');
+            if (is_null($request->user_id))
+                return ApiHelpers::error('Not found params: user_id');
+            $user = SmsUser::query()->where(['telegram_id' => $request->user_id])->first();
+            if (is_null($request->order_id))
+                return ApiHelpers::error('Not found params: order_id');
+            $order = SmsOrder::query()->where(['org_id' => $request->order_id])->first();
+            if (is_null($request->user_secret_key))
+                return ApiHelpers::error('Not found params: user_secret_key');
+            if (is_null($request->public_key))
+                return ApiHelpers::error('Not found params: public_key');
+            $bot = SmsBot::query()->where('public_key', $request->public_key)->first();
+            if (empty($bot))
+                return ApiHelpers::error('Not found module.');
 
-            $order = SmsOrder::where('org_id', $request->order_id)->first();
-            if (!$order) return ApiHelpers::error('Order not found');
-
-            // Быстрая проверка пользователя
             $botDto = BotFactory::fromEntity($bot);
-            $userCheck = BottApi::checkUser(
+            $result = BottApi::checkUser(
                 $request->user_id,
                 $request->user_secret_key,
                 $botDto->public_key,
                 $botDto->private_key
             );
-
-            if (!$userCheck['result']) {
-                return ApiHelpers::error($userCheck['message']);
+            if (!$result['result']) {
+                throw new RuntimeException($result['message']);
             }
 
-            // ОБРАБАТЫВАЕМ ЗАКАЗ
-            $this->orderService->order($userCheck['data'], $botDto, $order);
+            $this->orderService->order($result['data'], $botDto, $order);
 
-            // Возвращаем обновленные данные
-            $order->refresh();
-
-            return ApiHelpers::success([
-                'id' => $order->org_id,
-                'phone' => $order->phone,
-                'status' => $order->status,
-                'codes' => $order->codes,
-                'is_created' => $order->is_created,
-                'time' => $order->start_time
-            ]);
-
-        } catch (\Exception $e) {
-            \Log::error('Error in getOrder', [
-                'order_id' => $request->order_id,
-                'error' => $e->getMessage()
-            ]);
-            return ApiHelpers::error('Server error');
+            $order = SmsOrder::query()->where(['org_id' => $request->order_id])->first();
+            return ApiHelpers::success(OrderResource::generateOrderArray($order));
+        } catch (RuntimeException $r) {
+            BotLogHelpers::notifyBotLog('(🔴R ' . __FUNCTION__ . ' Activate): ' . $r->getMessage());
+            return ApiHelpers::error($r->getMessage());
+        } catch (Exception $e) {
+            BotLogHelpers::notifyBotLog('(🔴E ' . __FUNCTION__ . ' Activate): ' . $e->getMessage());
+            \Log::error($e->getMessage());
+            return ApiHelpers::error('Get order error');
         }
     }
+
+//    public function getOrder(Request $request)
+//    {
+//        // Быстрая валидация
+//        if (is_null($request->order_id) || is_null($request->user_id) ||
+//            is_null($request->user_secret_key) || is_null($request->public_key)) {
+//            return ApiHelpers::error('Missing required parameters');
+//        }
+//
+//        try {
+//            $bot = SmsBot::where('public_key', $request->public_key)->first();
+//            if (!$bot) return ApiHelpers::error('Module not found');
+//
+//            $order = SmsOrder::where('org_id', $request->order_id)->first();
+//            if (!$order) return ApiHelpers::error('Order not found');
+//
+//            // Быстрая проверка пользователя
+//            $botDto = BotFactory::fromEntity($bot);
+//            $userCheck = BottApi::checkUser(
+//                $request->user_id,
+//                $request->user_secret_key,
+//                $botDto->public_key,
+//                $botDto->private_key
+//            );
+//
+//            if (!$userCheck['result']) {
+//                return ApiHelpers::error($userCheck['message']);
+//            }
+//
+//            // ОБРАБАТЫВАЕМ ЗАКАЗ
+//            $this->orderService->order($userCheck['data'], $botDto, $order);
+//
+//            // Возвращаем обновленные данные
+//            $order->refresh();
+//
+//            return ApiHelpers::success([
+//                'id' => $order->org_id,
+//                'phone' => $order->phone,
+//                'status' => $order->status,
+//                'codes' => $order->codes,
+//                'is_created' => $order->is_created,
+//                'time' => $order->start_time
+//            ]);
+//
+//        } catch (\Exception $e) {
+//            \Log::error('Error in getOrder', [
+//                'order_id' => $request->order_id,
+//                'error' => $e->getMessage()
+//            ]);
+//            return ApiHelpers::error('Server error');
+//        }
+//    }
 
     /**
      * Установить статус 3 (Запросить еще одну смс)
