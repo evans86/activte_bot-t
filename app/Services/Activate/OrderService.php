@@ -842,28 +842,27 @@ class OrderService extends MainService
                                         $sms = $activateActiveOrder['smsText'];
                                     }
 
-                                    if (is_null($sms) || $sms == '[]') {
+                                    if (is_null($sms) || $sms == '[]' || empty(trim($sms))) {
                                         break;
                                     }
 
-                                    // ВРЕМЕННО ВОЗВРАЩАЕМ СТАРЫЙ ФОРМАТ ДЛЯ ФРОНТЕНДА
-                                    $sms = trim($sms); // просто строка, не JSON массив
+                                    $cleanSms = trim($sms);
 
-                                    // СОХРАНЯЕМ КОД СРАЗУ
-                                    $order->codes = $sms;
+                                    // ПРАВИЛЬНЫЙ ФОРМАТ: ["111111"]
+                                    $order->codes = json_encode([$cleanSms]);
                                     $order->status = $resultStatus;
 
                                     // СОЗДАЕМ УВЕДОМЛЕНИЕ ТОЛЬКО ОДИН РАЗ
                                     if ($order->is_created == false) {
                                         try {
-                                            // В уведомлении используем правильный формат
                                             BottApi::createOrder($botDto, $userData, $order->price_final,
-                                                'SMS код для ' . $order->phone . ': ' . $sms);
+                                                'SMS код для ' . $order->phone . ': ' . $cleanSms);
                                             $order->is_created = true;
                                             \Log::info('SMS notification created', [
                                                 'order_id' => $order->id,
                                                 'phone' => $order->phone,
-                                                'sms' => $sms
+                                                'sms' => $cleanSms,
+                                                'codes_format' => json_encode([$cleanSms]) // для отладки
                                             ]);
                                         } catch (\Exception $e) {
                                             \Log::error('Error creating notification', [
@@ -874,6 +873,14 @@ class OrderService extends MainService
                                     }
 
                                     $order->save();
+
+                                    \Log::info('Order updated with SMS', [
+                                        'order_id' => $order->id,
+                                        'codes' => $order->codes,
+                                        'status' => $order->status,
+                                        'is_created' => $order->is_created
+                                    ]);
+
                                     break;
                                 }
                             }
