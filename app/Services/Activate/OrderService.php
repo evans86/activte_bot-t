@@ -800,7 +800,7 @@ class OrderService extends MainService
 
     /**
      * Получение активного заказа и обновление кодов
-     * ИСПРАВЛЕННАЯ ВЕРСИЯ - правильный формат кода и одно уведомление
+     * ВРЕМЕННО ВОЗВРАЩАЕМ СТАРЫЙ ФОРМАТ ДЛЯ ФРОНТЕНДА
      */
     public function order(array $userData, BotDto $botDto, SmsOrder $order): void
     {
@@ -835,33 +835,30 @@ class OrderService extends MainService
 
                             foreach ($activateActiveOrders as $activateActiveOrder) {
                                 $order_id = $activateActiveOrder['activationId'];
-                                // Есть ли совпадение
                                 if ($order_id == $order->org_id) {
-                                    // Есть ли смс
                                     $sms = $activateActiveOrder['smsCode'];
 
                                     if (is_null($sms) || $sms == '[]') {
                                         $sms = $activateActiveOrder['smsText'];
                                     }
 
-                                    // Проверяем что SMS не пустое и валидное
-                                    if (is_null($sms) || $sms == '[]' || empty(trim($sms))) {
+                                    if (is_null($sms) || $sms == '[]') {
                                         break;
                                     }
 
-                                    // ФОРМАТИРУЕМ КОД ПРАВИЛЬНО: ["111111"]
-                                    $smsJson = json_encode([trim($sms)]);
+                                    // ВРЕМЕННО ВОЗВРАЩАЕМ СТАРЫЙ ФОРМАТ ДЛЯ ФРОНТЕНДА
+                                    $sms = trim($sms); // просто строка, не JSON массив
 
-                                    // ВАЖНО: сохраняем код СРАЗУ при получении
-                                    $order->codes = $smsJson;
+                                    // СОХРАНЯЕМ КОД СРАЗУ
+                                    $order->codes = $sms;
                                     $order->status = $resultStatus;
 
-                                    // СОЗДАЕМ УВЕДОМЛЕНИЕ ТОЛЬКО ЕСЛИ ЕЩЕ НЕ СОЗДАВАЛИ
+                                    // СОЗДАЕМ УВЕДОМЛЕНИЕ ТОЛЬКО ОДИН РАЗ
                                     if ($order->is_created == false) {
                                         try {
+                                            // В уведомлении используем правильный формат
                                             BottApi::createOrder($botDto, $userData, $order->price_final,
-                                                'Заказ активации для номера ' . $order->phone .
-                                                ' с смс: ' . $smsJson);
+                                                'SMS код для ' . $order->phone . ': ' . $sms);
                                             $order->is_created = true;
                                             \Log::info('SMS notification created', [
                                                 'order_id' => $order->id,
@@ -873,7 +870,6 @@ class OrderService extends MainService
                                                 'order_id' => $order->id,
                                                 'error' => $e->getMessage()
                                             ]);
-                                            // НЕ сбрасываем флаг is_created при ошибке - пробуем снова
                                         }
                                     }
 
