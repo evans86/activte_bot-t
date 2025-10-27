@@ -13,6 +13,7 @@ use App\Models\Order\SmsOrder;
 use App\Models\User\SmsUser;
 use App\Services\Activate\OrderService;
 use App\Services\External\BottApi;
+use DB;
 use Exception;
 use Illuminate\Http\Request;
 use RuntimeException;
@@ -216,35 +217,59 @@ class OrderController extends Controller
     public function getOrder(Request $request)
     {
         try {
-            if (is_null($request->user_id))
+            // Валидация обязательных параметров
+            if (is_null($request->user_id)) {
                 return ApiHelpers::error('Not found params: user_id');
-            $user = SmsUser::query()->where(['telegram_id' => $request->user_id])->first();
-            if (is_null($request->order_id))
+            }
+            if (is_null($request->order_id)) {
                 return ApiHelpers::error('Not found params: order_id');
-            $order = SmsOrder::query()->where(['org_id' => $request->order_id])->first();
-            if (is_null($request->user_secret_key))
+            }
+            if (is_null($request->user_secret_key)) {
                 return ApiHelpers::error('Not found params: user_secret_key');
-            if (is_null($request->public_key))
+            }
+            if (is_null($request->public_key)) {
                 return ApiHelpers::error('Not found params: public_key');
-            $bot = SmsBot::query()->where('public_key', $request->public_key)->first();
-            if (empty($bot))
-                return ApiHelpers::error('Not found module.');
-
-            $botDto = BotFactory::fromEntity($bot);
-            $result = BottApi::checkUser(
-                $request->user_id,
-                $request->user_secret_key,
-                $botDto->public_key,
-                $botDto->private_key
-            );
-            if (!$result['result']) {
-                throw new RuntimeException($result['message']);
             }
 
-            $this->orderService->order($result['data'], $botDto, $order);
+            // Поиск бота
+            $bot = SmsBot::query()->where('public_key', $request->public_key)->first();
+            if (empty($bot)) {
+                return ApiHelpers::error('Not found module.');
+            }
 
-            $order = SmsOrder::query()->where(['org_id' => $request->order_id])->first();
-            return ApiHelpers::success(OrderResource::generateOrderArray($order));
+            return DB::transaction(function () use ($request, $bot) {
+                // Блокируем заказ для предотвращения race condition
+                $order = SmsOrder::query()
+                    ->where(['org_id' => $request->order_id])
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$order) {
+                    return ApiHelpers::error('Order not found');
+                }
+
+                // Проверка пользователя
+                $botDto = BotFactory::fromEntity($bot);
+                $result = BottApi::checkUser(
+                    $request->user_id,
+                    $request->user_secret_key,
+                    $botDto->public_key,
+                    $botDto->private_key
+                );
+
+                if (!$result['result']) {
+                    throw new RuntimeException($result['message']);
+                }
+
+                // Обработка заказа
+                $this->orderService->order($result['data'], $botDto, $order);
+
+                // Обновляем данные заказа после обработки
+                $order->refresh();
+
+                return ApiHelpers::success(OrderResource::generateOrderArray($order));
+            });
+
         } catch (RuntimeException $r) {
             BotLogHelpers::notifyBotLog('(🔴R ' . __FUNCTION__ . ' Activate): ' . $r->getMessage());
             return ApiHelpers::error($r->getMessage());

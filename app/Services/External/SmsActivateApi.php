@@ -267,9 +267,22 @@ class SmsActivateApi
                 try {
                     $result = $this->sendRequest($serializedData, 1);
                 } catch (\Throwable $e) {
-                    BotLogHelpers::notifyBotLog('(🔴E ' . __FUNCTION__ . ' Activate): ' . $e->getMessage());
+                    BotLogHelpers::notifyBotLog('(🔴E ' . __FUNCTION__ . ' ACTIVATE): ' . $e->getMessage());
                     \Log::error($e->getMessage());
+
+                    // Возвращаем понятную ошибку вместо null
+                    if ($getNumber == 1) {
+                        return 'ERROR_CONNECTION';
+                    }
                     throw new RuntimeException('Ошибка соединения с сервером!');
+                }
+
+                // Добавляем проверку на пустой результат
+                if (empty($result)) {
+                    if ($getNumber == 1) {
+                        return 'EMPTY_RESPONSE';
+                    }
+                    return null;
                 }
 
                 $json_string = stripslashes(html_entity_decode($result));
