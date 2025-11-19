@@ -5,6 +5,12 @@ namespace App\Services\External;
 use App\Dto\BotDto;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Middleware;
+use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Psr7\Response;
+use Log;
 
 class BottApi
 {
@@ -82,44 +88,174 @@ class BottApi
         }
     }
 
-    /**
-     * Проверка пользователя
-     */
+    private static function createClient(): Client
+    {
+        $stack = HandlerStack::create();
+
+        // Добавляем retry middleware
+        $stack->push(Middleware::retry(
+            function (
+                $retries,
+                Request $request,
+                Response $response = null,
+                RequestException $exception = null
+            ) {
+                // Максимум 3 попытки
+                if ($retries >= 3) {
+                    return false;
+                }
+
+                // Повторяем при таймаутах и серверных ошибках
+                if ($exception instanceof \GuzzleHttp\Exception\ConnectException) {
+                    Log::warning("Retrying request due to connection issue", [
+                        'retry' => $retries + 1,
+                        'url' => $request->getUri()
+                    ]);
+                    return true;
+                }
+
+                if ($response && $response->getStatusCode() >= 500) {
+                    Log::warning("Retrying request due to server error", [
+                        'retry' => $retries + 1,
+                        'status' => $response->getStatusCode()
+                    ]);
+                    return true;
+                }
+
+                return false;
+            },
+            function ($retries) {
+                // Экспоненциальная задержка
+                return 1000 * pow(2, $retries);
+            }
+        ));
+
+        return new Client([
+            'timeout' => 15, // Увеличиваем общий таймаут
+            'connect_timeout' => 8, // Увеличиваем таймаут подключения
+            'handler' => $stack,
+            'curl' => [
+                CURLOPT_TCP_KEEPALIVE => 1,
+                CURLOPT_TCP_KEEPIDLE => 10,
+                CURLOPT_TCP_KEEPINTVL => 5,
+            ]
+        ]);
+    }
+
     public static function checkUser(int $telegram_id, string $secret_key, string $public_key, string $private_key)
     {
-        try {
-            $client = new Client([
-                'timeout' => 5,
-                'connect_timeout' => 3,
-            ]);
+        $maxRetries = 2;
+        $lastException = null;
 
-            $response = $client->get('https://api.bot-t.com/v1/module/user/check-secret?' . http_build_query([
-                    'public_key' => $public_key,
-                    'private_key' => $private_key,
-                    'id' => $telegram_id,
-                    'secret_key' => $secret_key,
-                ]));
+        for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
+            try {
+                $client = self::createClient();
 
-            $content = $response->getBody()->getContents();
+                $response = $client->get('https://api.bot-t.com/v1/module/user/check-secret?' . http_build_query([
+                        'public_key' => $public_key,
+                        'private_key' => $private_key,
+                        'id' => $telegram_id,
+                        'secret_key' => $secret_key,
+                    ]));
 
-            if (empty($content)) {
-                throw new \RuntimeException('Empty response from bot-t API');
+                $content = $response->getBody()->getContents();
+
+                if (empty($content)) {
+                    throw new \RuntimeException('Empty response from bot-t API');
+                }
+
+                $result = json_decode($content, true);
+
+                if (!is_array($result)) {
+                    throw new \RuntimeException('Invalid JSON response from bot-t API');
+                }
+
+                Log::info("Bot-t API checkUser successful", [
+                    'attempt' => $attempt,
+                    'user_id' => $telegram_id,
+                    'result' => $result['result'] ?? false
+                ]);
+
+                return $result;
+
+            } catch (GuzzleException $e) {
+                $lastException = $e;
+                Log::warning("Bot-t API checkUser attempt failed", [
+                    'attempt' => $attempt,
+                    'user_id' => $telegram_id,
+                    'error' => $e->getMessage()
+                ]);
+
+                if ($attempt < $maxRetries) {
+                    sleep(1); // Ждем перед повторной попыткой
+                    continue;
+                }
+            } catch (\Exception $e) {
+                $lastException = $e;
+                Log::error("Bot-t API checkUser error", [
+                    'attempt' => $attempt,
+                    'user_id' => $telegram_id,
+                    'error' => $e->getMessage()
+                ]);
+
+                if ($attempt < $maxRetries) {
+                    sleep(1);
+                    continue;
+                }
             }
-
-            $result = json_decode($content, true);
-
-            if (!is_array($result)) {
-                throw new \RuntimeException('Invalid JSON response from bot-t API');
-            }
-
-            return $result;
-
-        } catch (GuzzleException $e) {
-            throw new \RuntimeException('Ошибка связи с bot-t: ' . $e->getMessage());
-        } catch (\Exception $e) {
-            throw new \RuntimeException('Ошибка проверки пользователя: ' . $e->getMessage());
         }
+
+        // Если все попытки неудачны, логируем и возвращаем мягкую ошибку
+        Log::error("All bot-t API checkUser attempts failed", [
+            'user_id' => $telegram_id,
+            'final_error' => $lastException ? $lastException->getMessage() : 'Unknown error'
+        ]);
+
+        // Возвращаем мягкую ошибку вместо исключения
+        return [
+            'result' => false,
+            'message' => 'Временные проблемы с соединением. Попробуйте позже.'
+        ];
     }
+
+//    /**
+//     * Проверка пользователя
+//     */
+//    public static function checkUser(int $telegram_id, string $secret_key, string $public_key, string $private_key)
+//    {
+//        try {
+//            $client = new Client([
+//                'timeout' => 5,
+//                'connect_timeout' => 3,
+//            ]);
+//
+//            $response = $client->get('https://api.bot-t.com/v1/module/user/check-secret?' . http_build_query([
+//                    'public_key' => $public_key,
+//                    'private_key' => $private_key,
+//                    'id' => $telegram_id,
+//                    'secret_key' => $secret_key,
+//                ]));
+//
+//            $content = $response->getBody()->getContents();
+//
+//            if (empty($content)) {
+//                throw new \RuntimeException('Empty response from bot-t API');
+//            }
+//
+//            $result = json_decode($content, true);
+//
+//            if (!is_array($result)) {
+//                throw new \RuntimeException('Invalid JSON response from bot-t API');
+//            }
+//
+//            return $result;
+//
+//        } catch (GuzzleException $e) {
+//            throw new \RuntimeException('Ошибка связи с bot-t: ' . $e->getMessage());
+//        } catch (\Exception $e) {
+//            throw new \RuntimeException('Ошибка проверки пользователя: ' . $e->getMessage());
+//        }
+//    }
 
     /**
      * Списание баланса

@@ -293,47 +293,142 @@ class OrderController extends Controller
      * @param Request $request
      * @return array|string
      */
+
     public function getOrder(Request $request)
     {
         try {
-            if (is_null($request->user_id))
+            // Валидация
+            if (is_null($request->user_id)) {
                 return ApiHelpers::error('Not found params: user_id');
-            $user = SmsUser::query()->where(['telegram_id' => $request->user_id])->first();
-            if (is_null($request->order_id))
+            }
+            if (is_null($request->order_id)) {
                 return ApiHelpers::error('Not found params: order_id');
-            $order = SmsOrder::query()->where(['org_id' => $request->order_id])->first();
-            if (is_null($request->user_secret_key))
+            }
+            if (is_null($request->user_secret_key)) {
                 return ApiHelpers::error('Not found params: user_secret_key');
-            if (is_null($request->public_key))
+            }
+            if (is_null($request->public_key)) {
                 return ApiHelpers::error('Not found params: public_key');
+            }
+
             $bot = SmsBot::query()->where('public_key', $request->public_key)->first();
-            if (empty($bot))
+            if (empty($bot)) {
                 return ApiHelpers::error('Not found module.');
+            }
+
+            $user = SmsUser::query()->where(['telegram_id' => $request->user_id])->first();
+            $order = SmsOrder::query()->where(['org_id' => $request->order_id])->first();
+
+            if (!$order) {
+                return ApiHelpers::error('Order not found');
+            }
 
             $botDto = BotFactory::fromEntity($bot);
+
+            // Проверка пользователя с обработкой таймаутов
             $result = BottApi::checkUser(
                 $request->user_id,
                 $request->user_secret_key,
                 $botDto->public_key,
                 $botDto->private_key
             );
+
+            // Если временная ошибка соединения - продолжаем без блокировки пользователя
             if (!$result['result']) {
-                throw new RuntimeException($result['message']);
+                $errorMessage = $result['message'];
+
+                // Если это временная ошибка соединения - логируем и продолжаем
+                if (str_contains($errorMessage, 'проблемы с соединением') ||
+                    str_contains($errorMessage, 'таймаут') ||
+                    str_contains($errorMessage, 'timed out')) {
+
+                    BotLogHelpers::notifyBotLog('(⚠️ Timeout ' . __FUNCTION__ . '): ' . $errorMessage);
+
+                    // Вместо ошибки пользователю, продолжаем обработку заказа
+                    // но логируем это для мониторинга
+                    \Log::warning('Timeout in user check, continuing order processing', [
+                        'order_id' => $order->id,
+                        'user_id' => $request->user_id
+                    ]);
+
+                    // Можно пропустить проверку или использовать кешированные данные
+                    // В данном случае просто продолжаем
+                } else {
+                    // Для других ошибок (не таймаутов) показываем пользователю
+                    throw new RuntimeException($errorMessage);
+                }
             }
 
-            $this->orderService->order($result['data'], $botDto, $order);
+            $this->orderService->order($result['data'] ?? [], $botDto, $order);
 
-            $order = SmsOrder::query()->where(['org_id' => $request->order_id])->first();
+            $order->refresh();
             return ApiHelpers::success(OrderResource::generateOrderArray($order));
+
         } catch (RuntimeException $r) {
-            BotLogHelpers::notifyBotLog('(🔴R ' . __FUNCTION__ . ' Activate): ' . $r->getMessage());
+            // Не логируем таймауты как критические ошибки
+            if (!str_contains($r->getMessage(), 'таймаут') &&
+                !str_contains($r->getMessage(), 'timed out') &&
+                !str_contains($r->getMessage(), 'проблемы с соединением')) {
+                BotLogHelpers::notifyBotLog('(🔴R ' . __FUNCTION__ . ' Activate): ' . $r->getMessage());
+            }
             return ApiHelpers::error($r->getMessage());
-        } catch (Exception $e) {
-            BotLogHelpers::notifyBotLog('(🔴E ' . __FUNCTION__ . ' Activate): ' . $e->getMessage());
+        } catch (\Exception $e) {
+            // Не логируем таймауты как критические ошибки
+            if (!str_contains($e->getMessage(), 'таймаут') &&
+                !str_contains($e->getMessage(), 'timed out')) {
+                BotLogHelpers::notifyBotLog('(🔴E ' . __FUNCTION__ . ' Activate): ' . $e->getMessage());
+            }
             \Log::error($e->getMessage());
             return ApiHelpers::error('Get order error');
         }
     }
+
+
+//    public function getOrder(Request $request)
+//    {
+//        try {
+//            if (is_null($request->user_id))
+//                return ApiHelpers::error('Not found params: user_id');
+//            $user = SmsUser::query()->where(['telegram_id' => $request->user_id])->first();
+//            if (is_null($request->order_id))
+//                return ApiHelpers::error('Not found params: order_id');
+//            $order = SmsOrder::query()->where(['org_id' => $request->order_id])->first();
+//            if (is_null($request->user_secret_key))
+//                return ApiHelpers::error('Not found params: user_secret_key');
+//            if (is_null($request->public_key))
+//                return ApiHelpers::error('Not found params: public_key');
+//            $bot = SmsBot::query()->where('public_key', $request->public_key)->first();
+//            if (empty($bot))
+//                return ApiHelpers::error('Not found module.');
+//
+//            $botDto = BotFactory::fromEntity($bot);
+//            $result = BottApi::checkUser(
+//                $request->user_id,
+//                $request->user_secret_key,
+//                $botDto->public_key,
+//                $botDto->private_key
+//            );
+//            if (!$result['result']) {
+//                throw new RuntimeException($result['message']);
+//            }
+//
+//            $this->orderService->order($result['data'], $botDto, $order);
+//
+//            $order = SmsOrder::query()->where(['org_id' => $request->order_id])->first();
+//            return ApiHelpers::success(OrderResource::generateOrderArray($order));
+//        } catch (RuntimeException $r) {
+//            BotLogHelpers::notifyBotLog('(🔴R ' . __FUNCTION__ . ' Activate): ' . $r->getMessage());
+//            return ApiHelpers::error($r->getMessage());
+//        } catch (Exception $e) {
+//            BotLogHelpers::notifyBotLog('(🔴E ' . __FUNCTION__ . ' Activate): ' . $e->getMessage());
+//            \Log::error($e->getMessage());
+//            return ApiHelpers::error('Get order error');
+//        }
+//    }
+
+
+
+
 
 //    public function getOrder(Request $request)
 //    {
