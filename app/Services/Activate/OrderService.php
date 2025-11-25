@@ -173,14 +173,14 @@ class OrderService extends MainService
             // Из него получить цену
         BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' ActivationCOSTAPI: ' . $serviceResult['activationCost']);
             $amountStart = intval(floatval($serviceResult['activationCost']) * 100); //0.2 * 100 = 20
-        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' AmountStart 1: ' . $amountStart);
-        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' ApiRate: ' . $apiRate); // 80.4137
+//        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' AmountStart 1: ' . $amountStart);
+//        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' ApiRate: ' . $apiRate); // 80.4137
 
             $amountStart = round(($apiRate * $amountStart), 2); // 1608.27
-        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' AmountStart 2: ' . $amountStart);
+//        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' AmountStart 2: ' . $amountStart);
 
             $amountFinal = $amountStart + $amountStart * $botDto->percent / 100;
-        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' AmountFinalllll: ' . $amountFinal);
+//        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' AmountFinalllll: ' . $amountFinal);
 //        BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' userData: ' . $userData['money']);
 
 //        '3296.9535'  '2000'
