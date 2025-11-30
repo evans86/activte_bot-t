@@ -426,6 +426,8 @@ class OrderService extends MainService
                                     $order->codes = json_encode([$cleanSms]);
                                     $order->status = $resultStatus;
 
+                                    BotLogHelpers::notifyBotLog('🔴DEBUG ' . __FUNCTION__ . ' IS_Created: ' . $order->is_created);
+
                                     // СОЗДАЕМ УВЕДОМЛЕНИЕ ТОЛЬКО ОДИН РАЗ - ПРИ ПЕРВОМ ПОЛУЧЕНИИ КОДА
                                     if ($order->is_created == false) {
                                         try {
