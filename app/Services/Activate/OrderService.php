@@ -432,6 +432,7 @@ class OrderService extends MainService
                                             BottApi::createOrder($botDto, $userData, $order->price_final,
                                                 'SMS код для ' . $order->phone . ': ' . $cleanSms);
                                             $order->is_created = true;
+                                            $order->save();
                                             \Log::info('SMS notification created', [
                                                 'order_id' => $order->id,
                                                 'phone' => $order->phone,
