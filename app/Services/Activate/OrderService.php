@@ -243,164 +243,6 @@ class OrderService extends MainService
         });
     }
 
-    /**
-     * Создание заказа с транзакционностью и retry-логикой
-     */
-//    public function create(array $userData, BotDto $botDto, string $country_id): array
-//    {
-//        $maxRetries = 3;
-//        $lastException = null;
-//
-//        for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
-//            try {
-//                return DB::transaction(function () use ($userData, $botDto, $country_id, $attempt) {
-//                    $apiRate = ProductService::formingRublePrice();
-//                    $smsActivate = new SmsActivateApi($botDto->api_key, $botDto->resource_link);
-//
-//                    $user = SmsUser::where(['telegram_id' => $userData['user']['telegram_id']])->first();
-//                    if (is_null($user)) {
-//                        throw new RuntimeException('Пользователь не найден');
-//                    }
-//                    if (empty($user->service)) {
-//                        throw new RuntimeException('Выберите сервис');
-//                    }
-//
-//                    // 1. Сначала резервируем баланс в bot-t
-//                    $serviceResult = $smsActivate->getNumberV2($user->service, $country_id);
-//                    $org_id = intval($serviceResult['activationId']);
-//
-//                    $amountStart = intval(floatval($serviceResult['activationCost']) * 100);
-//                    $amountStart = round(($apiRate * $amountStart), 2);
-//                    $amountFinal = $amountStart + $amountStart * $botDto->percent / 100;
-//
-//                    if ($amountFinal > $userData['money']) {
-//                        $smsActivate->setStatus($org_id, SmsOrder::ACCESS_CANCEL);
-//                        throw new RuntimeException('Недостаточно средств. Пополните баланс в боте.');
-//                    }
-//
-//                    // 2. Создаем заказ в bot-t (основная операция)
-//                    $orderComment = 'Заказ активации для номера ' . $serviceResult['phoneNumber'] . ' (сервис: ' . $user->service . ')';
-//                    $orderResult = $this->createOrderInBotWithRetry($botDto, $userData, $amountFinal, $orderComment);
-//
-//                    if (!$orderResult['result']) {
-//                        $smsActivate->setStatus($org_id, SmsOrder::ACCESS_CANCEL);
-//                        throw new RuntimeException('Ошибка создания заказа: ' . $orderResult['message']);
-//                    }
-//
-//                    $orderIdInBot = $orderResult['data']['order_id'] ?? null;
-//
-//                    // 3. Сохраняем заказ в нашей БД с ID из bot-t
-//                    $country = SmsCountry::where(['org_id' => $country_id])->first();
-//                    $dateTime = new \DateTime($serviceResult['activationTime']);
-//                    $dateTime = $dateTime->format('U');
-//                    $dateTime = intval($dateTime);
-//
-//                    $data = [
-//                        'bot_id' => $botDto->id,
-//                        'user_id' => $user->id,
-//                        'service' => $user->service,
-//                        'country_id' => $country->id,
-//                        'org_id' => $org_id,
-//                        'bot_order_id' => $orderIdInBot, // Сохраняем ID заказа из bot-t
-//                        'phone' => $serviceResult['phoneNumber'],
-//                        'codes' => null,
-//                        'status' => SmsOrder::STATUS_WAIT_CODE,
-//                        'start_time' => $dateTime,
-//                        'end_time' => $dateTime + 1177,
-//                        'operator' => $serviceResult['activationOperator'],
-//                        'price_final' => $amountFinal,
-//                        'price_start' => $amountStart,
-//                        'sync_status' => 'synced', // Статус синхронизации
-//                    ];
-//
-//                    $order = SmsOrder::create($data);
-//
-//                    // 4. Подтверждаем статус у провайдера
-//                    $smsActivate->setStatus($order->org_id, SmsOrder::ACCESS_RETRY_GET);
-//                    $this->getStatus($order->org_id, $botDto);
-//
-//                    Log::info('Activate: Успешное создание заказа', [
-//                        'order_id' => $order->id,
-//                        'org_id' => $org_id,
-//                        'bot_order_id' => $orderIdInBot,
-//                        'attempt' => $attempt
-//                    ]);
-//
-//                    return [
-//                        'id' => $order->org_id,
-//                        'phone' => $serviceResult['phoneNumber'],
-//                        'time' => $dateTime,
-//                        'status' => $order->status,
-//                        'codes' => null,
-//                        'country' => $country->org_id,
-//                        'operator' => $serviceResult['activationOperator'],
-//                        'service' => $user->service,
-//                        'cost' => $amountFinal,
-//                        'bot_order_id' => $orderIdInBot
-//                    ];
-//
-//                }, 3); // 3 попытки для транзакции
-//
-//            } catch (Exception $e) {
-//                $lastException = $e;
-//                Log::warning("Попытка $attempt создания заказа не удалась", [
-//                    'error' => $e->getMessage(),
-//                    'user_id' => $userData['user']['telegram_id'] ?? null,
-//                    'country_id' => $country_id
-//                ]);
-//
-//                if ($attempt < $maxRetries) {
-//                    sleep(1); // Ждем перед повторной попыткой
-//                    continue;
-//                }
-//            }
-//        }
-//
-//        // Если все попытки неудачны, логируем и бросаем исключение
-//        BotLogHelpers::notifyBotLog("(🔴 CREATE_ORDER_FAILED): Все $maxRetries попыток создания заказа провалились: " . $lastException->getMessage());
-//        throw new RuntimeException('Не удалось создать заказ. Попробуйте позже. ' . $lastException->getMessage());
-//    }
-//
-//    /**
-//     * Создание заказа в bot-t с повторными попытками
-//     */
-//    private function createOrderInBotWithRetry(BotDto $botDto, array $userData, int $amount, string $product)
-//    {
-//        $maxRetries = 3;
-//        $lastException = null;
-//
-//        for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
-//            try {
-//                $result = BottApi::createOrder($botDto, $userData, $amount, $product);
-//
-//                if ($result['result']) {
-//                    Log::info("Заказ успешно создан в bot-t", [
-//                        'attempt' => $attempt,
-//                        'amount' => $amount,
-//                        'user_id' => $userData['user']['telegram_id']
-//                    ]);
-//                    return $result;
-//                }
-//
-//                // Если результат false, но нет исключения
-//                throw new RuntimeException($result['message'] ?? 'Unknown error from bot-t');
-//
-//            } catch (Exception $e) {
-//                $lastException = $e;
-//                Log::warning("Попытка $attempt создания заказа в bot-t не удалась", [
-//                    'error' => $e->getMessage(),
-//                    'attempt' => $attempt
-//                ]);
-//
-//                if ($attempt < $maxRetries) {
-//                    sleep(1);
-//                    continue;
-//                }
-//            }
-//        }
-//
-//        throw new RuntimeException("Не удалось создать заказ в системе после $maxRetries попыток: " . $lastException->getMessage());
-//    }
 
     /**
      * Отмена заказа со статусом 9
@@ -584,7 +426,7 @@ class OrderService extends MainService
                                     $order->codes = json_encode([$cleanSms]);
                                     $order->status = $resultStatus;
 
-                                    // СОЗДАЕМ УВЕДОМЛЕНИЕ ТОЛЬКО ОДИН РАЗ
+                                    // СОЗДАЕМ УВЕДОМЛЕНИЕ ТОЛЬКО ОДИН РАЗ - ПРИ ПЕРВОМ ПОЛУЧЕНИИ КОДА
                                     if ($order->is_created == false) {
                                         try {
                                             BottApi::createOrder($botDto, $userData, $order->price_final,
@@ -615,6 +457,100 @@ class OrderService extends MainService
                 }
         }
     }
+
+//    public function order(array $userData, BotDto $botDto, SmsOrder $order): void
+//    {
+//        switch ($order->status) {
+//            case SmsOrder::STATUS_CANCEL:
+//            case SmsOrder::STATUS_FINISH:
+//                break;
+//            case SmsOrder::STATUS_WAIT_CODE:
+//            case SmsOrder::STATUS_WAIT_RETRY:
+//                $resultStatus = $this->getStatus($order->org_id, $botDto);
+//                switch ($resultStatus) {
+//                    case OrdersHelper::requestArray('BAD_KEY'):
+//                    case OrdersHelper::requestArray('WRONG_ACTIVATION_ID'):
+//                        $this->notifyTelegram('BAD_KEY' . $order->id);
+//                        if (is_null($order->codes) || $order->codes == '[]' || $order->codes == '[ ]') {
+//                            $order->status = SmsOrder::STATUS_CANCEL;
+//                        } else {
+//                            $order->status = SmsOrder::STATUS_FINISH;
+//                        }
+//                        $order->save();
+//                        break;
+//                    case SmsOrder::STATUS_FINISH:
+//                    case SmsOrder::STATUS_CANCEL:
+//                        break;
+//                    case SmsOrder::STATUS_OK:
+//                    case SmsOrder::STATUS_WAIT_CODE:
+//                    case SmsOrder::STATUS_WAIT_RETRY:
+//                        $smsActivate = new SmsActivateApi($botDto->api_key, $botDto->resource_link);
+//                        $activateActiveOrders = $smsActivate->getActiveActivations();
+//                        if (key_exists('activeActivations', $activateActiveOrders)) {
+//                            $activateActiveOrders = $activateActiveOrders['activeActivations'];
+//
+//                            foreach ($activateActiveOrders as $activateActiveOrder) {
+//                                $order_id = $activateActiveOrder['activationId'];
+//                                if ($order_id == $order->org_id) {
+//                                    $sms = $activateActiveOrder['smsCode'];
+//
+//                                    if (is_null($sms) || $sms == '[]') {
+//                                        $sms = $activateActiveOrder['smsText'];
+//                                    }
+//
+//                                    // ИСПРАВЛЕНИЕ: Проверяем тип данных перед trim()
+//                                    if (is_array($sms)) {
+//                                        $sms = !empty($sms) ? implode(' ', $sms) : null;
+//                                    }
+//
+//                                    // ИСПРАВЛЕНИЕ: Безопасная проверка на пустое значение
+//                                    $isSmsEmpty = empty($sms) ||
+//                                        $sms == '[]' ||
+//                                        $sms == '[ ]' ||
+//                                        (is_string($sms) && trim($sms) === '');
+//
+//                                    if ($isSmsEmpty) {
+//                                        break;
+//                                    }
+//
+//                                    // ИСПРАВЛЕНИЕ: Безопасный trim()
+//                                    $cleanSms = is_string($sms) ? trim($sms) : (string)$sms;
+//
+//                                    // ПРАВИЛЬНЫЙ ФОРМАТ: ["111111"]
+//                                    $order->codes = json_encode([$cleanSms]);
+//                                    $order->status = $resultStatus;
+//
+//                                    // СОЗДАЕМ УВЕДОМЛЕНИЕ ТОЛЬКО ОДИН РАЗ
+//                                    if ($order->is_created == false) {
+//                                        try {
+//                                            BottApi::createOrder($botDto, $userData, $order->price_final,
+//                                                'SMS код для ' . $order->phone . ': ' . $cleanSms);
+//                                            $order->is_created = true;
+//                                            \Log::info('SMS notification created', [
+//                                                'order_id' => $order->id,
+//                                                'phone' => $order->phone,
+//                                                'sms' => $cleanSms,
+//                                                'codes_format' => json_encode([$cleanSms])
+//                                            ]);
+//                                        } catch (\Exception $e) {
+//                                            \Log::error('Error creating notification', [
+//                                                'order_id' => $order->id,
+//                                                'error' => $e->getMessage()
+//                                            ]);
+//                                        }
+//                                    }
+//
+//                                    $order->save();
+//                                    break;
+//                                }
+//                            }
+//                        }
+//                        break;
+//                    default:
+//                        throw new RuntimeException('Неизвестный статус: ' . $order->id);
+//                }
+//        }
+//    }
 
 //    /**
 //     * Получение активного заказа и обновление кодов
